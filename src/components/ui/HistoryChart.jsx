@@ -26,7 +26,7 @@ function calcUsd(balances, prices, volatileOnly = false) {
       if (!volatileOnly) total += amount
     } else {
       const priceKey = TOKEN_PRICE_KEYS[key]
-      if (priceKey) total += amount * prices[priceKey].usd
+      if (priceKey) total += amount * (prices[priceKey]?.usd ?? 0)
     }
   }
   return total

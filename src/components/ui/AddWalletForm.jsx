@@ -105,7 +105,7 @@ export function AddWalletForm({ onAdd }) {
           />
         </FormGroup>
 
-        {detectedChain && !atMax && (
+        {detectedChain && (
           <div>
             <div className="form-label mb-2">Extra addresses (same chain, optional)</div>
             <div className="stack stack-sm">
@@ -115,20 +115,22 @@ export function AddWalletForm({ onAdd }) {
                   <button type="button" onClick={() => handleRemoveExtra(addr)} className="btn-icon text-danger">✕</button>
                 </div>
               ))}
-              <div>
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder={`Additional ${detectedChain.toUpperCase()} address…`}
-                    value={newAddr}
-                    onChange={e => { setNewAddr(e.target.value); setAddrError('') }}
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddExtra() } }}
-                    className="font-mono flex-1"
-                  />
-                  <Button type="button" variant="secondary" onClick={handleAddExtra}>+</Button>
+              {!atMax && (
+                <div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder={`Additional ${detectedChain.toUpperCase()} address…`}
+                      value={newAddr}
+                      onChange={e => { setNewAddr(e.target.value); setAddrError('') }}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddExtra() } }}
+                      className="font-mono flex-1"
+                    />
+                    <Button type="button" variant="secondary" onClick={handleAddExtra}>+</Button>
+                  </div>
+                  {addrError && <p className="form-error mt-1">{addrError}</p>}
                 </div>
-                {addrError && <p className="form-error mt-1">{addrError}</p>}
-              </div>
+              )}
             </div>
           </div>
         )}

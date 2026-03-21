@@ -67,7 +67,7 @@ Caching: same 60s module-level cache as today (no change).
 
 ## Number Formatting
 
-- **USD price:** `$94,210` for ≥ $1, `$0.3800` for < $1 (4 decimal places), `$0.00028` for very small values
+- **USD price:** `$94,210` for ≥ $1 (no decimals if ≥ $1000, 2 decimals otherwise); for < $1: use `toLocaleString` with `maximumSignificantDigits: 4` (e.g. `$0.3800`, `$0.000280`)
 - **24h change:** `+2.1%` / `−0.4%`, always one decimal place, sign always shown
 - **Color:** green for ≥ 0, red for < 0
 

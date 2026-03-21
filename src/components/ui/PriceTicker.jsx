@@ -43,12 +43,14 @@ function CoinItem({ id, symbol, coin }) {
           <span className="text-xs font-mono" style={{ color: 'var(--color-sidebar-text)' }}>
             {formatUsd(coin.usd)}
           </span>
-          <span
-            className="text-xs font-mono"
-            style={{ color: coin.change24h >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}
-          >
-            {formatChange(coin.change24h)}
-          </span>
+          {coin.change24h !== null && (
+            <span
+              className="text-xs font-mono"
+              style={{ color: coin.change24h >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}
+            >
+              {formatChange(coin.change24h)}
+            </span>
+          )}
         </>
       ) : (
         <span className="inline-block h-3 w-20 rounded animate-pulse" style={{ background: 'var(--color-sidebar-border)' }} />

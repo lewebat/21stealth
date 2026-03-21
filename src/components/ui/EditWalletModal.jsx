@@ -27,7 +27,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
       setNewChainAddr('')
       setNewChainError('')
     }
-  }, [isOpen, wallet])
+  }, [isOpen, wallet?.id])
 
   const usedChains = new Set(entries.map(e => e.chain))
 
@@ -123,8 +123,8 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                   </button>
                 </div>
                 <div className="p-3 stack stack-sm">
-                  {addresses.map(addr => (
-                    <div key={addr} className="flex items-center gap-2">
+                  {addresses.map((addr, i) => (
+                    <div key={`${addr}-${i}`} className="flex items-center gap-2">
                       <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
                       <button
                         type="button"

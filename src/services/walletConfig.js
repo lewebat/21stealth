@@ -19,7 +19,12 @@ async function deriveKey(password, salt) {
 }
 
 export async function exportConfig(wallets, history, password) {
-  const config = { version: '1', exportedAt: new Date().toISOString(), wallets, history: history.length > 0 ? history : undefined }
+  const config = {
+    version: '1',
+    exportedAt: new Date().toISOString(),
+    wallets: wallets.map(({ addrTokens, addrStatus, addrError, tokens, status, errorMsg, ...w }) => w),
+    history: history.length > 0 ? history : undefined,
+  }
   const json = JSON.stringify(config, null, 2)
 
   let blob, filename
@@ -60,11 +65,13 @@ export async function importConfig(file, password) {
       throw new Error('Wrong password')
     }
     const config = JSON.parse(new TextDecoder().decode(plaintext))
-    return { wallets: config.wallets, history: config.history }
+    const wallets = config.wallets.map(w => ({ ...w, addresses: w.addresses ?? (w.address ? [w.address] : []) }))
+    return { wallets, history: config.history }
   }
 
   if (parsed.version !== '1' || !Array.isArray(parsed.wallets)) throw new Error('Invalid config format')
-  return { wallets: parsed.wallets, history: parsed.history }
+  const wallets = parsed.wallets.map(w => ({ ...w, addresses: w.addresses ?? (w.address ? [w.address] : []) }))
+  return { wallets, history: parsed.history }
 }
 
 export class NeedsPasswordError extends Error {

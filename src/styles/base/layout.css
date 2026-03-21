@@ -1,0 +1,78 @@
+/* ── Containers ─────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--spacing-container-xl);
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+.container-sm  { max-width: var(--spacing-container-sm); }
+.container-md  { max-width: var(--spacing-container-md); }
+.container-lg  { max-width: var(--spacing-container-lg); }
+.container-xl  { max-width: var(--spacing-container-xl); }
+.container-2xl { max-width: var(--spacing-container-2xl); }
+.container-fluid { max-width: 100%; }
+
+/* ── Sections ───────────────────────────────────────── */
+.section {
+  padding-block: var(--spacing-section-md);
+}
+.section-sm { padding-block: var(--spacing-section-sm); }
+.section-lg { padding-block: var(--spacing-section-lg); }
+
+/* ── Stack (vertical rhythm) ────────────────────────── */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+.stack > * + * { margin-top: var(--stack-gap, 1rem); }
+.stack-xs  { --stack-gap: 0.25rem; }
+.stack-sm  { --stack-gap: 0.5rem; }
+.stack-md  { --stack-gap: 1rem; }
+.stack-lg  { --stack-gap: 1.5rem; }
+.stack-xl  { --stack-gap: 2rem; }
+
+/* ── Cluster (horizontal group) ─────────────────────── */
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cluster-gap, 0.75rem);
+}
+.cluster-sm { --cluster-gap: 0.5rem; }
+.cluster-lg { --cluster-gap: 1.5rem; }
+
+/* ── Page structure ─────────────────────────────────── */
+.page-wrapper {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+/* ── Sidebar layout ─────────────────────────────────── */
+.app-sidebar {
+  width: var(--spacing-sidebar-width);
+  flex-shrink: 0;
+  background-color: var(--color-background);
+  color: var(--color-sidebar-text);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Divider ────────────────────────────────────────── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--color-border);
+}
+.divider-vertical {
+  width: 1px;
+  height: 100%;
+  background-color: var(--color-border);
+}

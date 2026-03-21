@@ -1,0 +1,81 @@
+/* ── Base card ───────────────────────────────────────── */
+.card {
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* ── Variants ───────────────────────────────────────── */
+.card-surface {
+  @apply card;
+  background-color: var(--color-surface);
+  box-shadow: none;
+}
+
+.card-elevated {
+  @apply card;
+  box-shadow: var(--shadow-lg);
+}
+
+.card-interactive {
+  @apply card;
+  cursor: pointer;
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
+}
+.card-interactive:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-1px);
+}
+
+/* ── Sizes ──────────────────────────────────────────── */
+.card-sm .card-body  { padding: 0.75rem; }
+.card-lg .card-body  { padding: 2rem; }
+
+/* ── Sections ───────────────────────────────────────── */
+.card-header {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-footer {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background-color: var(--color-surface);
+}
+
+/* ── Stat card ──────────────────────────────────────── */
+.card-stat {
+  @apply card;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.card-stat__label {
+  @apply text-label;
+}
+
+.card-stat__value {
+  @apply h3;
+}
+
+.card-stat__trend {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.card-stat__trend--up   { color: var(--color-success); }
+.card-stat__trend--down { color: var(--color-danger); }

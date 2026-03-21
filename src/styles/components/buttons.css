@@ -1,0 +1,108 @@
+/* ── Base button ────────────────────────────────────── */
+.btn {
+  @apply inline-flex items-center justify-center gap-2;
+  font-family: var(--font-body);
+  font-weight: 500;
+  border-radius: var(--radius-base);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+  user-select: none;
+  text-decoration: none;
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── Sizes ──────────────────────────────────────────── */
+.btn-xs  { padding: 0.25rem 0.625rem; font-size: 0.75rem; }
+.btn-sm  { padding: 0.375rem 0.875rem; font-size: 0.875rem; }
+.btn,
+.btn-md  { padding: 0.5rem 1rem; font-size: 0.9375rem; }
+.btn-lg  { padding: 0.625rem 1.25rem; font-size: 1rem; }
+.btn-xl  { padding: 0.75rem 1.5rem; font-size: 1.125rem; }
+
+.btn-full { width: 100%; }
+
+/* ── Variants ───────────────────────────────────────── */
+.btn-primary {
+  @apply btn;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverted);
+  border-color: var(--color-primary);
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  @apply btn;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--color-border);
+}
+
+.btn-accent {
+  @apply btn;
+  background-color: var(--color-accent);
+  color: var(--color-text-inverted);
+  border-color: var(--color-accent);
+}
+.btn-accent:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+}
+
+.btn-ghost {
+  @apply btn;
+  background-color: transparent;
+  color: var(--color-text);
+  border-color: transparent;
+}
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--color-surface);
+}
+
+.btn-danger {
+  @apply btn;
+  background-color: var(--color-danger);
+  color: var(--color-text-inverted);
+  border-color: var(--color-danger);
+}
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
+}
+
+.btn-link {
+  @apply btn;
+  background-color: transparent;
+  color: var(--color-primary);
+  border-color: transparent;
+  padding-inline: 0;
+}
+.btn-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+/* ── Icon button ────────────────────────────────────── */
+.btn-icon {
+  @apply btn btn-ghost;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+}

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices } from '@/services/prices'
-import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal } from '@ui'
+import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal, PriceTicker } from '@ui'
 import { Container, Grid } from '@layout'
 
 export default function DashboardPage() {
@@ -33,6 +33,8 @@ export default function DashboardPage() {
           onImport={(ws, hist) => { importWallets(ws); if (hist) loadHistory(hist) }}
         />
       </div>
+
+      <PriceTicker prices={prices} />
 
       {wallets.length === 0 ? (
         <Grid>

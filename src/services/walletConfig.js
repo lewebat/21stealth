@@ -18,6 +18,14 @@ async function deriveKey(password, salt) {
   )
 }
 
+// Normalise any wallet shape to { id, label, entries }
+// Handles: new shape (entries), old shape (chain + addresses), older shape (chain + address)
+function normalise(w) {
+  if (w.entries) return { id: w.id, label: w.label, entries: w.entries }
+  const addresses = w.addresses ?? (w.address ? [w.address] : [])
+  return { id: w.id, label: w.label, entries: [{ chain: w.chain, addresses }] }
+}
+
 export async function exportConfig(wallets, history, password) {
   const config = {
     version: '1',
@@ -65,12 +73,12 @@ export async function importConfig(file, password) {
       throw new Error('Wrong password')
     }
     const config = JSON.parse(new TextDecoder().decode(plaintext))
-    const wallets = config.wallets.map(({ address, ...w }) => ({ ...w, addresses: w.addresses ?? (address ? [address] : []) }))
+    const wallets = config.wallets.map(normalise)
     return { wallets, history: config.history }
   }
 
   if (parsed.version !== '1' || !Array.isArray(parsed.wallets)) throw new Error('Invalid config format')
-  const wallets = parsed.wallets.map(({ address, ...w }) => ({ ...w, addresses: w.addresses ?? (address ? [address] : []) }))
+  const wallets = parsed.wallets.map(normalise)
   return { wallets, history: parsed.history }
 }
 

@@ -1,22 +1,36 @@
 import { BLOCKCHAIN_API } from './blockchainApi'
 
+const COINGECKO_URL =
+  'https://api.coingecko.com/api/v3/simple/price' +
+  '?ids=bitcoin,ethereum,solana,litecoin,dogecoin,tron' +
+  '&vs_currencies=usd&include_24hr_change=true'
+
+const COIN_IDS = ['bitcoin', 'ethereum', 'solana', 'litecoin', 'dogecoin', 'tron']
+
 let cachedPrices = null
 
 export async function getPrices() {
   if (cachedPrices) return cachedPrices
 
-  const res = await fetch(BLOCKCHAIN_API.prices)
-  if (!res.ok) throw new Error('Failed to fetch prices')
-  const d = await res.json()
+  // Fetch both in parallel: backend for USD prices, CoinGecko for 24h change
+  const [backendRes, geckoRes] = await Promise.all([
+    fetch(BLOCKCHAIN_API.prices),
+    fetch(COINGECKO_URL),
+  ])
 
-  cachedPrices = {
-    bitcoin:  d.bitcoin.usd,
-    ethereum: d.ethereum.usd,
-    solana:   d.solana.usd,
-    litecoin: d.litecoin.usd,
-    dogecoin: d.dogecoin.usd,
-    tron:     d.tron.usd,
-  }
+  if (!backendRes.ok) throw new Error('Failed to fetch prices')
+  const backend = await backendRes.json()
+  const gecko = geckoRes.ok ? await geckoRes.json() : {}
+
+  cachedPrices = Object.fromEntries(
+    COIN_IDS.map(id => [
+      id,
+      {
+        usd: backend[id].usd,
+        change24h: gecko[id]?.usd_24h_change ?? 0,
+      },
+    ])
+  )
 
   return cachedPrices
 }

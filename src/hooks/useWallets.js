@@ -4,17 +4,18 @@ import { fetchEthBalances, fetchBtcBalances, fetchSolBalances, fetchLtcBalances,
 const CACHE_TTL = 60_000
 const cache = new Map() // key: 'chain:address' → { tokens, ts }
 
-function cacheKey(chain, address) { return `${chain}:${address}` }
+function addrKey(chain, address) { return `${chain}:${address}` }
 
 function getCached(chain, address) {
-  const entry = cache.get(cacheKey(chain, address))
+  const key = addrKey(chain, address)
+  const entry = cache.get(key)
   if (!entry) return null
-  if (Date.now() - entry.ts > CACHE_TTL) { cache.delete(cacheKey(chain, address)); return null }
+  if (Date.now() - entry.ts > CACHE_TTL) { cache.delete(key); return null }
   return entry
 }
 
 function setCached(chain, address, tokens) {
-  cache.set(cacheKey(chain, address), { tokens, ts: Date.now() })
+  cache.set(addrKey(chain, address), { tokens, ts: Date.now() })
 }
 
 function fetchBalances(chain, address) {
@@ -29,10 +30,14 @@ function fetchBalances(chain, address) {
   }
 }
 
-function aggregateTokens(addrTokens, addresses) {
+function allAddrKeys(wallet) {
+  return wallet.entries.flatMap(e => e.addresses.map(a => addrKey(e.chain, a)))
+}
+
+function aggregateTokens(addrTokens, keys) {
   const map = new Map()
-  for (const addr of addresses) {
-    const tokens = addrTokens[addr]
+  for (const key of keys) {
+    const tokens = addrTokens[key]
     if (!tokens) continue
     for (const t of tokens) {
       const existing = map.get(t.key)
@@ -41,58 +46,65 @@ function aggregateTokens(addrTokens, addresses) {
       } else {
         existing.balance += t.balance
         existing.usd += t.usd
-        // metadata from first entry is kept (same chain = identical metadata)
+        // metadata from first entry is kept
       }
     }
   }
   return [...map.values()]
 }
 
-function aggregateStatus(addrStatus, addresses) {
-  const statuses = addresses.map(a => addrStatus[a] ?? 'loading')
+function aggregateStatus(addrStatus, keys) {
+  const statuses = keys.map(k => addrStatus[k] ?? 'loading')
   if (statuses.some(s => s === 'loading')) return 'loading'
   if (statuses.some(s => s === 'error')) return 'error'
   return 'ok'
 }
 
-function aggregateErrorMsg(addrStatus, addresses) {
-  const errCount = addresses.filter(a => addrStatus[a] === 'error').length
+function aggregateErrorMsg(addrStatus, keys) {
+  const errCount = keys.filter(k => addrStatus[k] === 'error').length
   if (errCount === 0) return undefined
-  return `${errCount} von ${addresses.length} Adressen konnten nicht geladen werden`
+  return `${errCount} von ${keys.length} Adressen konnten nicht geladen werden`
 }
 
 function recompute(wallet) {
+  const keys = allAddrKeys(wallet)
   return {
     ...wallet,
-    tokens: aggregateTokens(wallet.addrTokens, wallet.addresses),
-    status: aggregateStatus(wallet.addrStatus, wallet.addresses),
-    errorMsg: aggregateErrorMsg(wallet.addrStatus, wallet.addresses),
+    tokens: aggregateTokens(wallet.addrTokens, keys),
+    status: aggregateStatus(wallet.addrStatus, keys),
+    errorMsg: aggregateErrorMsg(wallet.addrStatus, keys),
   }
 }
 
-function makeWallet(id, label, chain, addresses) {
-  const addrStatus = Object.fromEntries(addresses.map(a => [a, 'loading']))
+function makeWallet(id, label, entries) {
+  const addrStatus = {}
   const addrTokens = {}
   const addrError = {}
-  return recompute({ id, label, chain, addresses, addrTokens, addrStatus, addrError })
+  for (const { chain, addresses } of entries) {
+    for (const addr of addresses) {
+      addrStatus[addrKey(chain, addr)] = 'loading'
+    }
+  }
+  return recompute({ id, label, entries, addrTokens, addrStatus, addrError })
 }
 
 export function useWallets() {
   const [wallets, setWallets] = useState([])
-  // walletsRef gives loadOneAddress access to current wallets without stale closure
   const walletsRef = useRef(wallets)
   walletsRef.current = wallets
 
   const loadOneAddress = useCallback(async (walletId, chain, address, force = false) => {
+    const key = addrKey(chain, address)
     if (!force) {
       const cached = getCached(chain, address)
       if (cached) {
         setWallets(prev => prev.map(w => {
-          if (w.id !== walletId || !w.addresses.includes(address)) return w
-          const addrTokens = { ...w.addrTokens, [address]: cached.tokens }
-          const addrStatus = { ...w.addrStatus, [address]: 'ok' }
+          if (w.id !== walletId) return w
+          if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+          const addrTokens = { ...w.addrTokens, [key]: cached.tokens }
+          const addrStatus = { ...w.addrStatus, [key]: 'ok' }
           const addrError = { ...w.addrError }
-          delete addrError[address]
+          delete addrError[key]
           return recompute({ ...w, addrTokens, addrStatus, addrError })
         }))
         return
@@ -100,39 +112,44 @@ export function useWallets() {
     }
 
     setWallets(prev => prev.map(w => {
-      if (w.id !== walletId || !w.addresses.includes(address)) return w
-      return recompute({ ...w, addrStatus: { ...w.addrStatus, [address]: 'loading' } })
+      if (w.id !== walletId) return w
+      if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+      return recompute({ ...w, addrStatus: { ...w.addrStatus, [key]: 'loading' } })
     }))
 
     try {
       const tokens = await fetchBalances(chain, address)
       setCached(chain, address, tokens)
       setWallets(prev => prev.map(w => {
-        if (w.id !== walletId || !w.addresses.includes(address)) return w
-        const addrTokens = { ...w.addrTokens, [address]: tokens }
-        const addrStatus = { ...w.addrStatus, [address]: 'ok' }
+        if (w.id !== walletId) return w
+        if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+        const addrTokens = { ...w.addrTokens, [key]: tokens }
+        const addrStatus = { ...w.addrStatus, [key]: 'ok' }
         const addrError = { ...w.addrError }
-        delete addrError[address]
+        delete addrError[key]
         return recompute({ ...w, addrTokens, addrStatus, addrError })
       }))
     } catch (err) {
       setWallets(prev => prev.map(w => {
-        if (w.id !== walletId || !w.addresses.includes(address)) return w
-        const addrStatus = { ...w.addrStatus, [address]: 'error' }
-        const addrError = { ...w.addrError, [address]: err instanceof Error ? err.message : 'Unknown error' }
+        if (w.id !== walletId) return w
+        if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+        const addrStatus = { ...w.addrStatus, [key]: 'error' }
+        const addrError = { ...w.addrError, [key]: err instanceof Error ? err.message : 'Unknown error' }
         return recompute({ ...w, addrStatus, addrError })
       }))
     }
   }, [])
 
   const loadBalances = useCallback((wallet, force = false) => {
-    for (const address of wallet.addresses) {
-      loadOneAddress(wallet.id, wallet.chain, address, force)
+    for (const { chain, addresses } of wallet.entries) {
+      for (const address of addresses) {
+        loadOneAddress(wallet.id, chain, address, force)
+      }
     }
   }, [loadOneAddress])
 
-  const addWallet = useCallback((label, chain, addresses) => {
-    const wallet = makeWallet(crypto.randomUUID(), label, chain, addresses)
+  const addWallet = useCallback((label, entries) => {
+    const wallet = makeWallet(crypto.randomUUID(), label, entries)
     setWallets(prev => [...prev, wallet])
     loadBalances(wallet)
   }, [loadBalances])
@@ -142,14 +159,11 @@ export function useWallets() {
   }, [])
 
   const updateWallet = useCallback((id, patch) => {
-    // Capture current addresses before update to detect new ones
     const currentWallet = walletsRef.current.find(w => w.id === id)
     if (!currentWallet) return
-    const existingAddrs = new Set(currentWallet.addresses)
 
-    // Compute new addresses before entering the updater
-    const newAddresses = patch.addresses ? [...new Set(patch.addresses)] : currentWallet.addresses
-    if (newAddresses.length === 0) return  // guard: UI prevents this, silent no-op is safe
+    const existingKeys = new Set(allAddrKeys(currentWallet))
+    const newEntries = patch.entries ?? currentWallet.entries
 
     setWallets(prev => prev.map(w => {
       if (w.id !== id) return w
@@ -158,20 +172,25 @@ export function useWallets() {
       const addrTokens = {}
       const addrStatus = {}
       const addrError = {}
-      for (const addr of newAddresses) {
-        addrTokens[addr] = w.addrTokens[addr] ?? []
-        addrStatus[addr] = w.addrStatus[addr] ?? 'loading'
-        if (w.addrError[addr]) addrError[addr] = w.addrError[addr]
+      for (const { chain, addresses } of newEntries) {
+        for (const addr of addresses) {
+          const k = addrKey(chain, addr)
+          addrTokens[k] = w.addrTokens[k] ?? []
+          addrStatus[k] = w.addrStatus[k] ?? 'loading'
+          if (w.addrError[k]) addrError[k] = w.addrError[k]
+        }
       }
 
-      return recompute({ ...w, label, addresses: newAddresses, addrTokens, addrStatus, addrError })
+      return recompute({ ...w, label, entries: newEntries, addrTokens, addrStatus, addrError })
     }))
 
-    // Load balances for newly added addresses only
-    if (patch.addresses) {
-      const newAddrs = newAddresses.filter(a => !existingAddrs.has(a))
-      for (const addr of newAddrs) {
-        loadOneAddress(id, currentWallet.chain, addr, false)
+    if (patch.entries) {
+      for (const { chain, addresses } of newEntries) {
+        for (const addr of addresses) {
+          if (!existingKeys.has(addrKey(chain, addr))) {
+            loadOneAddress(id, chain, addr, false)
+          }
+        }
       }
     }
   }, [loadOneAddress])
@@ -186,7 +205,7 @@ export function useWallets() {
   }, [loadBalances])
 
   const importWallets = useCallback((imported) => {
-    const newWallets = imported.map(w => makeWallet(w.id ?? crypto.randomUUID(), w.label, w.chain, w.addresses))
+    const newWallets = imported.map(w => makeWallet(w.id ?? crypto.randomUUID(), w.label, w.entries))
     setWallets(newWallets)
     newWallets.forEach(w => loadBalances(w))
   }, [loadBalances])

@@ -65,12 +65,12 @@ export async function importConfig(file, password) {
       throw new Error('Wrong password')
     }
     const config = JSON.parse(new TextDecoder().decode(plaintext))
-    const wallets = config.wallets.map(w => ({ ...w, addresses: w.addresses ?? (w.address ? [w.address] : []) }))
+    const wallets = config.wallets.map(({ address, ...w }) => ({ ...w, addresses: w.addresses ?? (address ? [address] : []) }))
     return { wallets, history: config.history }
   }
 
   if (parsed.version !== '1' || !Array.isArray(parsed.wallets)) throw new Error('Invalid config format')
-  const wallets = parsed.wallets.map(w => ({ ...w, addresses: w.addresses ?? (w.address ? [w.address] : []) }))
+  const wallets = parsed.wallets.map(({ address, ...w }) => ({ ...w, addresses: w.addresses ?? (address ? [address] : []) }))
   return { wallets, history: parsed.history }
 }
 

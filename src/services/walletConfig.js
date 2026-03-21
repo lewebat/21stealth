@@ -29,7 +29,8 @@ function normalise(w) {
   return { id: w.id, label: w.label, entries: [{ chain: w.chain, addresses }] }
 }
 
-export async function exportConfig(wallets, history, password) {
+// Private helper — returns a Blob (plain JSON or AES-GCM encrypted)
+async function buildConfigBlob(wallets, history, password) {
   const config = {
     version: '1',
     exportedAt: new Date().toISOString(),
@@ -38,27 +39,33 @@ export async function exportConfig(wallets, history, password) {
   }
   const json = JSON.stringify(config, null, 2)
 
-  let blob, filename
-
   if (password) {
     const salt = crypto.getRandomValues(new Uint8Array(16))
     const iv   = crypto.getRandomValues(new Uint8Array(12))
     const key  = await deriveKey(password, salt)
     const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(json))
     const file = { '21stealth': true, v: 1, salt: toBase64(salt), iv: toBase64(iv), data: toBase64(ciphertext) }
-    blob = new Blob([JSON.stringify(file)], { type: 'application/json' })
-    filename = '21stealth-config.encrypted.json'
-  } else {
-    blob = new Blob([json], { type: 'application/json' })
-    filename = '21stealth-config.json'
+    return new Blob([JSON.stringify(file)], { type: 'application/json' })
   }
+  return new Blob([json], { type: 'application/json' })
+}
 
+export async function exportConfig(wallets, history, password) {
+  const blob = await buildConfigBlob(wallets, history, password)
+  const filename = password ? '21stealth-config.encrypted.json' : '21stealth-config.json'
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
   a.download = filename
   a.click()
   URL.revokeObjectURL(url)
+}
+
+export async function saveToHandle(fileHandle, wallets, history, password) {
+  const blob = await buildConfigBlob(wallets, history, password)
+  const writable = await fileHandle.createWritable()
+  await writable.write(blob)
+  await writable.close()
 }
 
 export async function importConfig(file, password) {

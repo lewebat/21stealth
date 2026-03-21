@@ -27,9 +27,9 @@ async function withPrices(chain, address, priceMap) {
   return rawTokens.map((t) => ({ ...t, usd: t.balance * (map[t.key] ?? 1) }))
 }
 
-export const fetchEthBalances  = (address) => withPrices('eth',  address, (p) => ({ eth: p.ethereum, usdt: 1, usdc: 1 }))
-export const fetchBtcBalances  = (address) => withPrices('btc',  address, (p) => ({ btc: p.bitcoin }))
-export const fetchSolBalances  = (address) => withPrices('sol',  address, (p) => ({ sol: p.solana }))
-export const fetchLtcBalances  = (address) => withPrices('ltc',  address, (p) => ({ ltc: p.litecoin }))
-export const fetchDogeBalances = (address) => withPrices('doge', address, (p) => ({ doge: p.dogecoin }))
-export const fetchTrxBalances  = (address) => withPrices('trx',  address, (p) => ({ trx: p.tron, usdt: 1, usdc: 1 }))
+export const fetchEthBalances  = (address) => withPrices('eth',  address, (p) => ({ eth: p.ethereum.usd, usdt: 1, usdc: 1 }))
+export const fetchBtcBalances  = (address) => withPrices('btc',  address, (p) => ({ btc: p.bitcoin.usd }))
+export const fetchSolBalances  = (address) => withPrices('sol',  address, (p) => ({ sol: p.solana.usd }))
+export const fetchLtcBalances  = (address) => withPrices('ltc',  address, (p) => ({ ltc: p.litecoin.usd }))
+export const fetchDogeBalances = (address) => withPrices('doge', address, (p) => ({ doge: p.dogecoin.usd }))
+export const fetchTrxBalances  = (address) => withPrices('trx',  address, (p) => ({ trx: p.tron.usd, usdt: 1, usdc: 1 }))

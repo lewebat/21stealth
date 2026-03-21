@@ -26,7 +26,7 @@ export async function getPrices() {
     COIN_IDS.map(id => [
       id,
       {
-        usd: backend[id].usd,
+        usd: backend[id]?.usd ?? 0,
         change24h: gecko[id]?.usd_24h_change ?? 0,
       },
     ])

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
-import { getPrices } from '@/services/prices'
+import { getPrices, invalidatePrices } from '@/services/prices'
 import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal, PriceTicker } from '@ui'
 import { Container, Grid } from '@layout'
 
@@ -55,7 +55,7 @@ export default function DashboardPage() {
         <>
           <Grid gap="md">
             <Grid.Col span="third">
-              <TotalBar wallets={wallets} onRefreshAll={refreshAll} />
+              <TotalBar wallets={wallets} onRefreshAll={() => { invalidatePrices(); getPrices().then(setPrices).catch(() => {}); refreshAll() }} />
             </Grid.Col>
             <Grid.Col span="two-thirds">
               <PortfolioSummary wallets={wallets} getDelta={getDelta} />

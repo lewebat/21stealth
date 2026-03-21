@@ -9,6 +9,10 @@ const COIN_IDS = ['bitcoin', 'ethereum', 'solana', 'litecoin', 'dogecoin', 'tron
 
 let cachedPrices = null
 
+export function invalidatePrices() {
+  cachedPrices = null
+}
+
 export async function getPrices() {
   if (cachedPrices) return cachedPrices
 

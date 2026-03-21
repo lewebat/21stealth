@@ -45,7 +45,6 @@ function aggregateTokens(addrTokens, keys) {
         map.set(t.key, { ...t })
       } else {
         existing.balance += t.balance
-        existing.usd += t.usd
         // metadata from first entry is kept
       }
     }

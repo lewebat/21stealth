@@ -63,7 +63,7 @@ function aggregateStatus(addrStatus, keys) {
 function aggregateErrorMsg(addrStatus, keys) {
   const errCount = keys.filter(k => addrStatus[k] === 'error').length
   if (errCount === 0) return undefined
-  return `${errCount} von ${keys.length} Adressen konnten nicht geladen werden`
+  return `${errCount} of ${keys.length} addresses failed to load`
 }
 
 function recompute(wallet) {
@@ -79,6 +79,7 @@ function recompute(wallet) {
 function makeWallet(id, label, entries) {
   const addrStatus = {}
   const addrTokens = {}
+  // consumed by WalletCard ChainSection per-chain error display
   const addrError = {}
   for (const { chain, addresses } of entries) {
     for (const addr of addresses) {

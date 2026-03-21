@@ -2,21 +2,22 @@ import { useEffect, useState } from 'react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices } from '@/services/prices'
-import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions } from '@ui'
+import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal } from '@ui'
 import { Container, Grid } from '@layout'
 
 export default function DashboardPage() {
-  const { wallets, addWallet, removeWallet, refreshWallet, refreshAll, importWallets } = useWallets()
+  const { wallets, addWallet, removeWallet, updateWallet, refreshWallet, refreshAll, importWallets } = useWallets()
   const { history, saveSnapshot, loadHistory, getDelta } = useHistory()
   const [prices, setPrices] = useState(null)
+  const [editingWallet, setEditingWallet] = useState(null)
 
   useEffect(() => {
     getPrices().then(setPrices).catch(() => {})
   }, [])
 
   useEffect(() => {
-    const anyLoading = wallets.some((w) => w.status === 'loading' || w.status === 'idle')
-    const anyLoaded  = wallets.some((w) => w.status === 'ok')
+    const anyLoading = wallets.some(w => w.status === 'loading' || w.status === 'idle')
+    const anyLoaded  = wallets.some(w => w.status === 'ok')
     if (!anyLoading && anyLoaded) saveSnapshot(wallets)
   }, [wallets, saveSnapshot])
 
@@ -65,12 +66,13 @@ export default function DashboardPage() {
           </Grid>
 
           <Grid gap="md" className="items-stretch">
-            {wallets.map((wallet) => (
+            {wallets.map(wallet => (
               <Grid.Col key={wallet.id} span="half">
                 <WalletCard
                   wallet={wallet}
                   onRefresh={() => refreshWallet(wallet.id)}
                   onRemove={() => removeWallet(wallet.id)}
+                  onEdit={() => setEditingWallet(wallet)}
                   getDelta={getDelta}
                 />
               </Grid.Col>
@@ -83,6 +85,15 @@ export default function DashboardPage() {
             </Grid.Col>
           </Grid>
         </>
+      )}
+
+      {editingWallet && (
+        <EditWalletModal
+          wallet={editingWallet}
+          isOpen={!!editingWallet}
+          onClose={() => setEditingWallet(null)}
+          onSave={(id, patch) => { updateWallet(id, patch); setEditingWallet(null) }}
+        />
       )}
 
     </Container>

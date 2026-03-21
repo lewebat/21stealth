@@ -14,8 +14,9 @@ export function AddWalletForm({ onAdd }) {
   const [addrError, setAddrError] = useState('')
   const [open, setOpen] = useState(false)
 
-  const detectedChain = detectChain(firstAddr)
-  const allAddresses = detectedChain ? [firstAddr.trim(), ...addresses] : addresses
+  const firstAddrTrimmed = firstAddr.trim()
+  const detectedChain = detectChain(firstAddrTrimmed)
+  const allAddresses = detectedChain ? [firstAddrTrimmed, ...addresses] : addresses
 
   function handleAddExtra() {
     const trimmed = newAddr.trim()
@@ -40,7 +41,7 @@ export function AddWalletForm({ onAdd }) {
 
   function handleSubmit(e) {
     e.preventDefault()
-    if (!firstAddr.trim() || !detectedChain) return
+    if (!firstAddrTrimmed || !detectedChain) return
     onAdd(label.trim() || CHAIN_LABELS[detectedChain], detectedChain, allAddresses)
     setLabel('')
     setFirstAddr('')
@@ -63,7 +64,7 @@ export function AddWalletForm({ onAdd }) {
 
   if (!open) {
     return (
-      <button onClick={() => setOpen(true)} className="btn-secondary btn-full" style={{ borderStyle: 'dashed' }}>
+      <button type="button" onClick={() => setOpen(true)} className="btn-secondary btn-full" style={{ borderStyle: 'dashed' }}>
         + Add wallet
       </button>
     )

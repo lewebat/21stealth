@@ -9,7 +9,8 @@ export default function DashboardPage() {
   const { wallets, addWallet, removeWallet, updateWallet, refreshWallet, refreshAll, importWallets } = useWallets()
   const { history, saveSnapshot, loadHistory, getDelta } = useHistory()
   const [prices, setPrices] = useState(null)
-  const [editingWallet, setEditingWallet] = useState(null)
+  const [editingWalletId, setEditingWalletId] = useState(null)
+  const editingWallet = editingWalletId ? wallets.find(w => w.id === editingWalletId) ?? null : null
 
   useEffect(() => {
     getPrices().then(setPrices).catch(() => {})
@@ -72,7 +73,7 @@ export default function DashboardPage() {
                   wallet={wallet}
                   onRefresh={() => refreshWallet(wallet.id)}
                   onRemove={() => removeWallet(wallet.id)}
-                  onEdit={() => setEditingWallet(wallet)}
+                  onEdit={() => setEditingWalletId(wallet.id)}
                   getDelta={getDelta}
                 />
               </Grid.Col>
@@ -90,9 +91,9 @@ export default function DashboardPage() {
       {editingWallet && (
         <EditWalletModal
           wallet={editingWallet}
-          isOpen={!!editingWallet}
-          onClose={() => setEditingWallet(null)}
-          onSave={(id, patch) => { updateWallet(id, patch); setEditingWallet(null) }}
+          isOpen={true}
+          onClose={() => setEditingWalletId(null)}
+          onSave={(id, patch) => { updateWallet(id, patch); setEditingWalletId(null) }}
         />
       )}
 

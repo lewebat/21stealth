@@ -140,6 +140,7 @@ function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, wal
 }
 
 export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta }) {
+  // wallet.tokens is pre-aggregated by recompute() in useWallets — reflects all loaded addresses
   const totalUsd = wallet.tokens.reduce((s, t) => s + t.usd, 0)
   const allKeys = wallet.entries.flatMap(e => e.addresses.map(a => `${e.chain}:${a}`))
   const isPartialError = wallet.status === 'error' &&

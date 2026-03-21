@@ -19,35 +19,55 @@ function formatChange(n) {
   return sign + n.toFixed(1) + '%'
 }
 
+const tickerStyles = `
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  .ticker-track {
+    animation: ticker-scroll 30s linear infinite;
+  }
+  .ticker-track:hover {
+    animation-play-state: paused;
+  }
+`
+
+function CoinItem({ id, symbol, coin }) {
+  return (
+    <div className="flex items-center gap-1.5 shrink-0 px-4">
+      <span className="text-xs font-bold" style={{ color: 'var(--color-sidebar-text)' }}>
+        {symbol}
+      </span>
+      {coin ? (
+        <>
+          <span className="text-xs font-mono" style={{ color: 'var(--color-sidebar-text)' }}>
+            {formatUsd(coin.usd)}
+          </span>
+          <span
+            className="text-xs font-mono"
+            style={{ color: coin.change24h >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}
+          >
+            {formatChange(coin.change24h)}
+          </span>
+        </>
+      ) : (
+        <span className="inline-block h-3 w-20 rounded animate-pulse" style={{ background: 'var(--color-sidebar-border)' }} />
+      )}
+    </div>
+  )
+}
+
 export function PriceTicker({ prices }) {
   return (
     <div className="rounded-lg overflow-hidden" style={{ background: 'var(--color-sidebar-bg)' }}>
-      <div className="flex items-center gap-6 px-4 py-2 overflow-x-auto scrollbar-none">
-        {COINS.map(({ id, symbol }) => {
-          const coin = prices?.[id]
-          return (
-            <div key={id} className="flex items-center gap-1.5 shrink-0">
-              <span className="text-xs font-bold" style={{ color: 'var(--color-sidebar-text)' }}>
-                {symbol}
-              </span>
-              {coin ? (
-                <>
-                  <span className="text-xs font-mono" style={{ color: 'var(--color-sidebar-text)' }}>
-                    {formatUsd(coin.usd)}
-                  </span>
-                  <span
-                    className="text-xs font-mono"
-                    style={{ color: coin.change24h >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}
-                  >
-                    {formatChange(coin.change24h)}
-                  </span>
-                </>
-              ) : (
-                <span className="inline-block h-3 w-20 rounded animate-pulse" style={{ background: 'var(--color-sidebar-border)' }} />
-              )}
-            </div>
-          )
-        })}
+      <style>{tickerStyles}</style>
+      <div className="overflow-hidden py-2">
+        <div className="ticker-track flex w-max">
+          {/* Duplicate coins for seamless loop */}
+          {[...COINS, ...COINS].map(({ id, symbol }, i) => (
+            <CoinItem key={i} id={id} symbol={symbol} coin={prices?.[id]} />
+          ))}
+        </div>
       </div>
     </div>
   )

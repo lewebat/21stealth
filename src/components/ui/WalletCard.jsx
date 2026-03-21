@@ -15,7 +15,35 @@ const fmt4 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })
 const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const shorten = (addr) => addr.length > 20 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr
 
-function AddressSection({ address, tokens, status, errorMsg, walletId, getDelta }) {
+// Aggregate tokens from multiple addrTokens entries into one list (sum balance+usd by key)
+function aggregateTokens(addresses, chain, addrTokens) {
+  const map = new Map()
+  for (const addr of addresses) {
+    const tokens = addrTokens[`${chain}:${addr}`] ?? []
+    for (const t of tokens) {
+      if (map.has(t.key)) {
+        const existing = map.get(t.key)
+        map.set(t.key, { ...existing, balance: existing.balance + t.balance, usd: existing.usd + t.usd })
+      } else {
+        map.set(t.key, { ...t })
+      }
+    }
+  }
+  return [...map.values()]
+}
+
+function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, walletId, getDelta }) {
+  // Derive chain-level status: loading if any loading, error if all errored, else ok
+  const statuses = addresses.map(a => addrStatus[`${chain}:${a}`] ?? 'loading')
+  const chainStatus = statuses.some(s => s === 'loading') ? 'loading'
+    : statuses.every(s => s === 'error') ? 'error'
+    : 'ok'
+  const firstError = addresses.map(a => addrError[`${chain}:${a}`]).find(Boolean)
+  const chainTokens = useMemo(
+    () => aggregateTokens(addresses, chain, addrTokens),
+    [addresses, chain, addrTokens]
+  )
+
   const columns = useMemo(() => [
     {
       id: 'token',
@@ -53,25 +81,32 @@ function AddressSection({ address, tokens, status, errorMsg, walletId, getDelta 
   ], [walletId, getDelta])
 
   const table = useReactTable({
-    data: tokens ?? [],
+    data: chainTokens,
     columns,
     getCoreRowModel: getCoreRowModel(),
     autoResetPageIndex: false,
   })
 
+  const addrLabel = addresses.length === 1
+    ? shorten(addresses[0])
+    : `${addresses.length} Adressen`
+
   return (
     <div className="border-t border-border">
-      <div className="px-3 pt-2 pb-1">
-        <span className="text-caption font-mono text-text-subtle">{shorten(address)}</span>
+      <div className="px-3 pt-2 pb-1 flex items-center gap-2">
+        <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${CHAIN_BADGE[chain]}`}>
+          {chain.toUpperCase()}
+        </span>
+        <span className="text-caption font-mono text-text-subtle truncate">{addrLabel}</span>
       </div>
-      {status === 'loading' && (
+      {chainStatus === 'loading' && (
         <div className="px-3 pb-2"><div className="skeleton h-4 w-24" /></div>
       )}
-      {status === 'error' && (
-        <div className="px-3 pb-2 form-error">{errorMsg ?? 'Error'}</div>
+      {chainStatus === 'error' && (
+        <div className="px-3 pb-2 form-error">{firstError ?? 'Error'}</div>
       )}
-      {status === 'ok' && (
-        tokens?.length === 0 ? (
+      {chainStatus === 'ok' && (
+        chainTokens.length === 0 ? (
           <div className="px-3 pb-2 text-caption text-text-subtle">No balance</div>
         ) : (
           <Card.Body className="pt-0">
@@ -104,18 +139,26 @@ function AddressSection({ address, tokens, status, errorMsg, walletId, getDelta 
   )
 }
 
-export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, className = '' }) {
+export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta }) {
   const totalUsd = wallet.tokens.reduce((s, t) => s + t.usd, 0)
+  const allKeys = wallet.entries.flatMap(e => e.addresses.map(a => `${e.chain}:${a}`))
   const isPartialError = wallet.status === 'error' &&
-    wallet.addresses.some(a => wallet.addrStatus[a] === 'ok')
+    allKeys.some(k => wallet.addrStatus[k] === 'ok')
+  const chainCount = wallet.entries.length
 
   return (
     <Card className="h-full flex flex-col">
       <Card.Header>
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${CHAIN_BADGE[wallet.chain]}`}>
-            {wallet.chain.toUpperCase()}
-          </span>
+          {chainCount === 1 ? (
+            <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${CHAIN_BADGE[wallet.entries[0].chain]}`}>
+              {wallet.entries[0].chain.toUpperCase()}
+            </span>
+          ) : (
+            <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 bg-primary text-text-inverted">
+              {chainCount} Chains
+            </span>
+          )}
           <span className="text-body font-semibold truncate">{wallet.label}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
@@ -142,13 +185,14 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, clas
         </div>
       </Card.Header>
 
-      {wallet.addresses.map(addr => (
-        <AddressSection
-          key={addr}
-          address={addr}
-          tokens={wallet.addrTokens[addr]}
-          status={wallet.addrStatus[addr] ?? 'loading'}
-          errorMsg={wallet.addrError[addr]}
+      {wallet.entries.map(({ chain, addresses }) => (
+        <ChainSection
+          key={chain}
+          chain={chain}
+          addresses={addresses}
+          addrTokens={wallet.addrTokens}
+          addrStatus={wallet.addrStatus}
+          addrError={wallet.addrError}
           walletId={wallet.id}
           getDelta={getDelta}
         />

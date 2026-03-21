@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table'
 import Card from './Card'
+import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
 
 const CHAIN_BADGE = {
   eth:  'bg-primary text-text-inverted',
@@ -23,7 +24,7 @@ function aggregateTokens(addresses, chain, addrTokens) {
     for (const t of tokens) {
       if (map.has(t.key)) {
         const existing = map.get(t.key)
-        map.set(t.key, { ...existing, balance: existing.balance + t.balance, usd: existing.usd + t.usd })
+        map.set(t.key, { ...existing, balance: existing.balance + t.balance })
       } else {
         map.set(t.key, { ...t })
       }
@@ -32,16 +33,20 @@ function aggregateTokens(addresses, chain, addrTokens) {
   return [...map.values()]
 }
 
-function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, walletId, getDelta }) {
+function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, walletId, getDelta, prices }) {
   // Derive chain-level status: loading if any loading, error if all errored, else ok
   const statuses = addresses.map(a => addrStatus[`${chain}:${a}`] ?? 'loading')
   const chainStatus = statuses.some(s => s === 'loading') ? 'loading'
     : statuses.every(s => s === 'error') ? 'error'
     : 'ok'
   const firstError = addresses.map(a => addrError[`${chain}:${a}`]).find(Boolean)
-  const chainTokens = useMemo(
+  const rawTokens = useMemo(
     () => aggregateTokens(addresses, chain, addrTokens),
     [addresses, chain, addrTokens]
+  )
+  const chainTokens = useMemo(
+    () => tokensWithUsd(rawTokens, prices),
+    [rawTokens, prices]
   )
 
   const columns = useMemo(() => [
@@ -139,9 +144,9 @@ function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, wal
   )
 }
 
-export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta }) {
+export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, prices }) {
   // wallet.tokens is pre-aggregated by recompute() in useWallets — reflects all loaded addresses
-  const totalUsd = wallet.tokens.reduce((s, t) => s + t.usd, 0)
+  const totalUsd = wallet.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0)
   const allKeys = wallet.entries.flatMap(e => e.addresses.map(a => `${e.chain}:${a}`))
   const isPartialError = wallet.status === 'error' &&
     allKeys.some(k => wallet.addrStatus[k] === 'ok')
@@ -196,6 +201,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta }) {
           addrError={wallet.addrError}
           walletId={wallet.id}
           getDelta={getDelta}
+          prices={prices}
         />
       ))}
 

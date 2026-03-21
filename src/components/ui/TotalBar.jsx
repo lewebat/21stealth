@@ -1,7 +1,11 @@
 import Button from './Button'
+import { tokenUsd } from '@/utils/tokenUsd'
 
-export function TotalBar({ wallets, onRefreshAll }) {
-  const total = wallets.reduce((sum, w) => sum + w.tokens.reduce((s, t) => s + t.usd, 0), 0)
+export function TotalBar({ wallets, prices, onRefreshAll }) {
+  const total = wallets.reduce(
+    (sum, w) => sum + w.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0),
+    0
+  )
 
   return (
     <div className="card">

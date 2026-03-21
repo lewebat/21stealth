@@ -110,7 +110,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, clas
     wallet.addresses.some(a => wallet.addrStatus[a] === 'ok')
 
   return (
-    <Card className={`h-full flex flex-col`}>
+    <Card className="h-full flex flex-col">
       <Card.Header>
         <div className="flex items-center gap-1.5 min-w-0">
           <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${CHAIN_BADGE[wallet.chain]}`}>
@@ -120,6 +120,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, clas
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <button
+            type="button"
             onClick={onEdit}
             title="Bearbeiten"
             className="btn-icon text-text-muted hover:text-text"
@@ -127,6 +128,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, clas
             ✎
           </button>
           <button
+            type="button"
             onClick={onRefresh}
             disabled={wallet.status === 'loading'}
             title="Refresh"
@@ -134,7 +136,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, clas
           >
             {wallet.status === 'loading' ? '…' : '↻'}
           </button>
-          <button onClick={onRemove} title="Remove" className="btn-icon text-text-subtle hover:text-danger">
+          <button type="button" onClick={onRemove} title="Remove" className="btn-icon text-text-subtle hover:text-danger">
             ✕
           </button>
         </div>

@@ -51,6 +51,7 @@ function CoinItem({ id, symbol, coin }) {
               {formatChange(coin.change24h)}
             </span>
           )}
+
         </>
       ) : (
         <span className="inline-block h-3 w-20 rounded animate-pulse" style={{ background: 'var(--color-sidebar-border)' }} />

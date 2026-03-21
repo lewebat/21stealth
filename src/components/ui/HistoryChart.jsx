@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'rec
 import Card from './Card'
 import Button from './Button'
 import { useCI } from '@hooks/useCI'
+import { tokenUsd } from '@/utils/tokenUsd'
 
 const TOKEN_PRICE_KEYS = { eth: 'ethereum', btc: 'bitcoin', sol: 'solana', ltc: 'litecoin', doge: 'dogecoin', trx: 'tron' }
 const STABLECOINS = new Set(['usdt', 'usdc'])
@@ -67,8 +68,8 @@ export function HistoryChart({ history, wallets, prices }) {
 
   const selectedWallet = loadedWallets.find((w) => w.id === selected)
   const currentValue = selected === 'total'
-    ? loadedWallets.reduce((s, w) => s + w.tokens.reduce((t, tk) => volatileOnly && STABLECOINS.has(tk.key) ? t : t + tk.usd, 0), 0)
-    : (selectedWallet?.tokens.reduce((t, tk) => volatileOnly && STABLECOINS.has(tk.key) ? t : t + tk.usd, 0) ?? 0)
+    ? loadedWallets.reduce((s, w) => s + w.tokens.reduce((t, tk) => volatileOnly && STABLECOINS.has(tk.key) ? t : t + tokenUsd(tk, prices), 0), 0)
+    : (selectedWallet?.tokens.reduce((t, tk) => volatileOnly && STABLECOINS.has(tk.key) ? t : t + tokenUsd(tk, prices), 0) ?? 0)
 
   const firstValue = chartData[0]?.value ?? 0
   const totalDelta = currentValue - firstValue

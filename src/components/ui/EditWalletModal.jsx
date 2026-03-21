@@ -5,114 +5,178 @@ import Button from './Button'
 import { detectChain } from '@utils/detectChain'
 
 const CHAIN_LABELS = { eth: 'Ethereum', btc: 'Bitcoin', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron' }
+const CHAIN_BADGE = {
+  eth: 'bg-primary text-text-inverted', btc: 'bg-accent text-text-inverted',
+  sol: 'bg-info text-text-inverted',    ltc: 'bg-info text-text-inverted',
+  doge: 'bg-warning text-text-inverted', trx: 'bg-danger text-text-inverted',
+}
 const MAX_ADDRESSES = 10
 
 export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
   const [label, setLabel] = useState('')
-  const [addresses, setAddresses] = useState([])
-  const [newAddr, setNewAddr] = useState('')
-  const [addrError, setAddrError] = useState('')
+  const [entries, setEntries] = useState([])       // [{chain, addresses}]
+  const [entryInputs, setEntryInputs] = useState({}) // {chain: {value, error}}
+  const [newChainAddr, setNewChainAddr] = useState('')
+  const [newChainError, setNewChainError] = useState('')
 
-  // Sync state from wallet prop whenever modal opens
   useEffect(() => {
     if (isOpen && wallet) {
       setLabel(wallet.label)
-      setAddresses(wallet.addresses)
-      setNewAddr('')
-      setAddrError('')
+      setEntries(wallet.entries.map(e => ({ ...e, addresses: [...e.addresses] })))
+      setEntryInputs({})
+      setNewChainAddr('')
+      setNewChainError('')
     }
   }, [isOpen, wallet])
 
-  function handleAddAddress() {
-    const trimmed = newAddr.trim()
-    if (!trimmed) return
-    if (addresses.includes(trimmed)) {
-      setAddrError('Adresse bereits vorhanden')
-      return
-    }
-    const detected = detectChain(trimmed)
-    if (!detected || detected !== wallet.chain) {
-      setAddrError(`Ungültige Adresse oder falsche Chain (erwartet: ${wallet.chain.toUpperCase()})`)
-      return
-    }
-    setAddresses(prev => [...prev, trimmed])
-    setNewAddr('')
-    setAddrError('')
+  const usedChains = new Set(entries.map(e => e.chain))
+
+  function setEntryInput(chain, value) {
+    setEntryInputs(prev => ({ ...prev, [chain]: { value, error: '' } }))
   }
 
-  function handleRemoveAddress(addr) {
-    if (addresses.length <= 1) return
-    setAddresses(prev => prev.filter(a => a !== addr))
+  function setEntryError(chain, error) {
+    setEntryInputs(prev => ({ ...prev, [chain]: { ...prev[chain], error } }))
+  }
+
+  function handleAddAddress(chain) {
+    const value = entryInputs[chain]?.value?.trim() ?? ''
+    if (!value) return
+    const entry = entries.find(e => e.chain === chain)
+    if (!entry) return
+    if (entry.addresses.includes(value)) { setEntryError(chain, 'Adresse bereits vorhanden'); return }
+    const detected = detectChain(value)
+    if (!detected || detected !== chain) {
+      setEntryError(chain, `Ungültige Adresse (erwartet: ${chain.toUpperCase()})`)
+      return
+    }
+    setEntries(prev => prev.map(e => e.chain === chain ? { ...e, addresses: [...e.addresses, value] } : e))
+    setEntryInput(chain, '')
+  }
+
+  function handleRemoveAddress(chain, addr) {
+    const entry = entries.find(e => e.chain === chain)
+    if (!entry || entry.addresses.length <= 1) return
+    setEntries(prev => prev.map(e => e.chain === chain ? { ...e, addresses: e.addresses.filter(a => a !== addr) } : e))
+  }
+
+  function handleRemoveChainEntry(chain) {
+    if (entries.length <= 1) return
+    setEntries(prev => prev.filter(e => e.chain !== chain))
+  }
+
+  function handleAddChainEntry() {
+    const trimmed = newChainAddr.trim()
+    if (!trimmed) return
+    const detected = detectChain(trimmed)
+    if (!detected) { setNewChainError('Unbekannte Adresse'); return }
+    if (usedChains.has(detected)) {
+      setNewChainError(`${CHAIN_LABELS[detected] ?? detected} bereits vorhanden`)
+      return
+    }
+    setEntries(prev => [...prev, { chain: detected, addresses: [trimmed] }])
+    setNewChainAddr('')
+    setNewChainError('')
   }
 
   function handleSave() {
-    onSave(wallet.id, { label: label.trim() || CHAIN_LABELS[wallet.chain], addresses })
-    // onSave handler in DashboardPage calls setEditingWallet(null) which closes the modal
-    // do NOT call onClose() here to avoid double state update
+    const firstEntry = entries[0]
+    const fallbackLabel = firstEntry ? (CHAIN_LABELS[firstEntry.chain] ?? 'Wallet') : 'Wallet'
+    onSave(wallet.id, { label: label.trim() || fallbackLabel, entries })
   }
 
-  const atMax = addresses.length >= MAX_ADDRESSES
-
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Wallet bearbeiten"
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title="Wallet bearbeiten" size="md">
       <Modal.Body>
         <div className="stack stack-md">
+
           <FormGroup label="Label" htmlFor="edit-label">
             <Input
               id="edit-label"
               type="text"
               value={label}
               onChange={e => setLabel(e.target.value)}
-              placeholder={CHAIN_LABELS[wallet?.chain] ?? ''}
+              placeholder="Wallet Label"
             />
           </FormGroup>
 
-          <div>
-            <div className="form-label mb-2">
-              Adressen ({wallet?.chain?.toUpperCase()})
-            </div>
-            <div className="stack stack-sm">
-              {addresses.map(addr => (
-                <div key={addr} className="flex items-center gap-2">
-                  <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
+          {/* Per-chain entry sections */}
+          {entries.map(({ chain, addresses }) => {
+            const input = entryInputs[chain] ?? { value: '', error: '' }
+            const atMax = addresses.length >= MAX_ADDRESSES
+            return (
+              <div key={chain} className="border border-border rounded-lg overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-2 bg-surface">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${CHAIN_BADGE[chain]}`}>
+                      {chain.toUpperCase()}
+                    </span>
+                    <span className="text-caption text-text-muted">{CHAIN_LABELS[chain]}</span>
+                  </div>
                   <button
                     type="button"
-                    onClick={() => handleRemoveAddress(addr)}
-                    disabled={addresses.length <= 1}
-                    className="btn-icon text-danger disabled:opacity-30"
-                    title="Entfernen"
+                    onClick={() => handleRemoveChainEntry(chain)}
+                    disabled={entries.length <= 1}
+                    className="text-caption text-danger disabled:opacity-30 hover:underline"
                   >
-                    ✕
+                    Chain entfernen
                   </button>
                 </div>
-              ))}
-
-              {!atMax && (
-                <div>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="Neue Adresse hinzufügen…"
-                      value={newAddr}
-                      onChange={e => { setNewAddr(e.target.value); setAddrError('') }}
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddress() } }}
-                      className="font-mono flex-1"
-                    />
-                    <Button type="button" variant="secondary" onClick={handleAddAddress}>+</Button>
-                  </div>
-                  {addrError && <p className="form-error mt-1">{addrError}</p>}
+                <div className="p-3 stack stack-sm">
+                  {addresses.map(addr => (
+                    <div key={addr} className="flex items-center gap-2">
+                      <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveAddress(chain, addr)}
+                        disabled={addresses.length <= 1}
+                        className="btn-icon text-danger disabled:opacity-30"
+                        title="Entfernen"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {!atMax ? (
+                    <div>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder={`Neue ${chain.toUpperCase()} Adresse…`}
+                          value={input.value}
+                          onChange={e => setEntryInput(chain, e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddress(chain) } }}
+                          className="font-mono flex-1"
+                        />
+                        <Button type="button" variant="secondary" onClick={() => handleAddAddress(chain)}>+</Button>
+                      </div>
+                      {input.error && <p className="form-error mt-1">{input.error}</p>}
+                    </div>
+                  ) : (
+                    <p className="text-caption text-text-muted">Maximum von {MAX_ADDRESSES} Adressen erreicht</p>
+                  )}
                 </div>
-              )}
-              {atMax && (
-                <p className="text-caption text-text-muted">Maximum von {MAX_ADDRESSES} Adressen erreicht</p>
-              )}
+              </div>
+            )
+          })}
+
+          {/* Add new chain entry */}
+          <div>
+            <div className="form-label mb-2">Weitere Chain hinzufügen</div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Adresse eingeben — Chain wird erkannt…"
+                value={newChainAddr}
+                onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChainEntry() } }}
+                className="font-mono flex-1"
+              />
+              <Button type="button" variant="secondary" onClick={handleAddChainEntry}>+</Button>
             </div>
+            {newChainError && <p className="form-error mt-1">{newChainError}</p>}
           </div>
+
         </div>
       </Modal.Body>
       <Modal.Footer>

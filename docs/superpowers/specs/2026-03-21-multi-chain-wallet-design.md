@@ -101,6 +101,16 @@ When a wallet has only 1 chain entry, it looks identical to today's single-chain
 - "Weitere Chain hinzufügen" section at bottom: address input → auto-detect → adds new entry
 - Duplicate chain validation: same error as AddWalletForm
 
+## Implementation Notes
+
+**`MAX_ADDRESSES` limit:** 10 addresses per chain entry (not per wallet total). Same as today — the limit applies within each `{ chain, addresses }` entry independently.
+
+**`isPartialError` in WalletCard:** The current footer `*` indicator must be re-derived from entries: a partial error exists when at least one `chain:address` key has `addrStatus = 'error'` and at least one has `addrStatus = 'ok'`.
+
+**`walletConfig` normalisation:** The existing `importConfig` already normalises `address → addresses`. The new normalisation (`chain+addresses → entries`) replaces and consolidates the old pass — a single `normalise(w)` function handles both old shapes in one step.
+
+**Token metadata on cross-chain collision:** When two chains produce a token with the same `key` (e.g. `usdc`), metadata (symbol, name) from the first occurrence is kept. USD value is summed. This matches the existing same-chain behaviour and is correct for portfolio totals.
+
 ## Files Changed
 
 | Action | File | Purpose |

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
@@ -11,9 +11,20 @@ export default function DashboardPage() {
   const [prices, setPrices] = useState(null)
   const [editingWalletId, setEditingWalletId] = useState(null)
   const editingWallet = editingWalletId ? wallets.find(w => w.id === editingWalletId) ?? null : null
+  const intervalRef = useRef(null)
+
+  function startPricePolling() {
+    if (intervalRef.current) clearInterval(intervalRef.current)
+    intervalRef.current = setInterval(() => {
+      invalidatePrices()
+      getPrices().then(setPrices).catch(() => {})
+    }, 60_000)
+  }
 
   useEffect(() => {
     getPrices().then(setPrices).catch(() => {})
+    startPricePolling()
+    return () => clearInterval(intervalRef.current)
   }, [])
 
   useEffect(() => {
@@ -21,6 +32,13 @@ export default function DashboardPage() {
     const anyLoaded  = wallets.some(w => w.status === 'ok')
     if (!anyLoading && anyLoaded) saveSnapshot(wallets)
   }, [wallets, saveSnapshot])
+
+  function handleRefreshAll() {
+    invalidatePrices()
+    getPrices().then(setPrices).catch(() => {})
+    startPricePolling()
+    refreshAll()
+  }
 
   return (
     <Container className="py-6 flex flex-col gap-6">
@@ -55,10 +73,10 @@ export default function DashboardPage() {
         <>
           <Grid gap="md">
             <Grid.Col span="third">
-              <TotalBar wallets={wallets} onRefreshAll={() => { invalidatePrices(); getPrices().then(setPrices).catch(() => {}); refreshAll() }} />
+              <TotalBar wallets={wallets} prices={prices} onRefreshAll={handleRefreshAll} />
             </Grid.Col>
             <Grid.Col span="two-thirds">
-              <PortfolioSummary wallets={wallets} getDelta={getDelta} />
+              <PortfolioSummary wallets={wallets} prices={prices} getDelta={getDelta} />
             </Grid.Col>
           </Grid>
 
@@ -73,6 +91,7 @@ export default function DashboardPage() {
               <Grid.Col key={wallet.id} span="half">
                 <WalletCard
                   wallet={wallet}
+                  prices={prices}
                   onRefresh={() => refreshWallet(wallet.id)}
                   onRemove={() => removeWallet(wallet.id)}
                   onEdit={() => setEditingWalletId(wallet.id)}

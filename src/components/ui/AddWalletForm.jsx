@@ -124,7 +124,7 @@ export function AddWalletForm({ onAdd }) {
         </FormGroup>
 
         {/* Extra addresses for same chain */}
-        {detectedChain && !atMaxSameChain && (
+        {detectedChain && (sameChainAddrs.length > 0 || !atMaxSameChain) && (
           <div>
             <div className="form-label mb-2">Extra {detectedChain.toUpperCase()} addresses (optional)</div>
             <div className="stack stack-sm">
@@ -134,20 +134,24 @@ export function AddWalletForm({ onAdd }) {
                   <button type="button" onClick={() => setSameChainAddrs(p => p.filter(a => a !== addr))} className="btn-icon text-danger">✕</button>
                 </div>
               ))}
-              <div>
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder={`Additional ${detectedChain.toUpperCase()} address…`}
-                    value={newSameAddr}
-                    onChange={e => { setNewSameAddr(e.target.value); setNewSameError('') }}
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddSameChain() } }}
-                    className="font-mono flex-1"
-                  />
-                  <Button type="button" variant="secondary" onClick={handleAddSameChain}>+</Button>
+              {!atMaxSameChain ? (
+                <div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder={`Additional ${detectedChain.toUpperCase()} address…`}
+                      value={newSameAddr}
+                      onChange={e => { setNewSameAddr(e.target.value); setNewSameError('') }}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddSameChain() } }}
+                      className="font-mono flex-1"
+                    />
+                    <Button type="button" variant="secondary" onClick={handleAddSameChain}>+</Button>
+                  </div>
+                  {newSameError && <p className="form-error mt-1">{newSameError}</p>}
                 </div>
-                {newSameError && <p className="form-error mt-1">{newSameError}</p>}
-              </div>
+              ) : (
+                <p className="text-caption text-text-muted">Maximum of 10 addresses reached</p>
+              )}
             </div>
           </div>
         )}

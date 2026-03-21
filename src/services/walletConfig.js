@@ -1,5 +1,8 @@
 function toBase64(buf) {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+  let binary = ''
+  const bytes = new Uint8Array(buf)
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i])
+  return btoa(binary)
 }
 
 function fromBase64(s) {
@@ -73,6 +76,7 @@ export async function importConfig(file, password) {
       throw new Error('Wrong password')
     }
     const config = JSON.parse(new TextDecoder().decode(plaintext))
+    if (config.version !== '1' || !Array.isArray(config.wallets)) throw new Error('Invalid config format')
     const wallets = config.wallets.map(normalise)
     return { wallets, history: config.history }
   }

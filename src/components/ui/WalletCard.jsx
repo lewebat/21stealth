@@ -13,11 +13,9 @@ const CHAIN_BADGE = {
 
 const fmt4 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })
 const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const shorten = (addr) => addr.length > 20 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr
 
-export function WalletCard({ wallet, onRefresh, onRemove, getDelta, className = '' }) {
-  const totalUsd = wallet.tokens.reduce((s, t) => s + t.usd, 0)
-  const isEmpty  = wallet.status === 'ok' && totalUsd === 0
-
+function AddressSection({ address, tokens, status, errorMsg, walletId, getDelta }) {
   const columns = useMemo(() => [
     {
       id: 'token',
@@ -30,7 +28,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, getDelta, className = 
       header: () => <span className="block text-right">Balance</span>,
       accessorKey: 'balance',
       cell: ({ getValue, row }) => {
-        const delta = getDelta(wallet.id, row.original.key, getValue())
+        const delta = getDelta(walletId, row.original.key, getValue())
         const positive = delta !== null && delta > 0
         return (
           <div className="text-right">
@@ -52,13 +50,67 @@ export function WalletCard({ wallet, onRefresh, onRemove, getDelta, className = 
         <div className="text-right font-mono text-caption text-text-muted">${fmt2(getValue())}</div>
       ),
     },
-  ], [wallet.id, getDelta])
+  ], [walletId, getDelta])
 
-  const table = useReactTable({ data: wallet.tokens, columns, getCoreRowModel: getCoreRowModel(), autoResetPageIndex: false })
+  const table = useReactTable({
+    data: tokens ?? [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    autoResetPageIndex: false,
+  })
 
   return (
-    <Card className={`h-full flex flex-col ${isEmpty ? 'opacity-50' : ''}`}>
-      {/* Header */}
+    <div className="border-t border-border">
+      <div className="px-3 pt-2 pb-1">
+        <span className="text-caption font-mono text-text-subtle">{shorten(address)}</span>
+      </div>
+      {status === 'loading' && (
+        <div className="px-3 pb-2"><div className="skeleton h-4 w-24" /></div>
+      )}
+      {status === 'error' && (
+        <div className="px-3 pb-2 form-error">{errorMsg ?? 'Error'}</div>
+      )}
+      {status === 'ok' && (
+        tokens?.length === 0 ? (
+          <div className="px-3 pb-2 text-caption text-text-subtle">No balance</div>
+        ) : (
+          <Card.Body className="pt-0">
+            <div className="table-wrapper">
+              <table className="table table-compact">
+                <thead>
+                  {table.getHeaderGroups().map(hg => (
+                    <tr key={hg.id}>
+                      {hg.headers.map(h => (
+                        <th key={h.id}>{flexRender(h.column.columnDef.header, h.getContext())}</th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.map(row => (
+                    <tr key={row.id}>
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card.Body>
+        )
+      )}
+    </div>
+  )
+}
+
+export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, className = '' }) {
+  const totalUsd = wallet.tokens.reduce((s, t) => s + t.usd, 0)
+  const isPartialError = wallet.status === 'error' &&
+    wallet.addresses.some(a => wallet.addrStatus[a] === 'ok')
+
+  return (
+    <Card className={`h-full flex flex-col`}>
       <Card.Header>
         <div className="flex items-center gap-1.5 min-w-0">
           <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${CHAIN_BADGE[wallet.chain]}`}>
@@ -67,6 +119,13 @@ export function WalletCard({ wallet, onRefresh, onRemove, getDelta, className = 
           <span className="text-body font-semibold truncate">{wallet.label}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={onEdit}
+            title="Bearbeiten"
+            className="btn-icon text-text-muted hover:text-text"
+          >
+            ✎
+          </button>
           <button
             onClick={onRefresh}
             disabled={wallet.status === 'loading'}
@@ -81,56 +140,24 @@ export function WalletCard({ wallet, onRefresh, onRemove, getDelta, className = 
         </div>
       </Card.Header>
 
-      {/* Address */}
-      <Card.Body className="py-1.5">
-        <span className="text-caption font-mono text-text-subtle break-all">
-          {wallet.address}
-        </span>
-      </Card.Body>
+      {wallet.addresses.map(addr => (
+        <AddressSection
+          key={addr}
+          address={addr}
+          tokens={wallet.addrTokens[addr]}
+          status={wallet.addrStatus[addr] ?? 'loading'}
+          errorMsg={wallet.addrError[addr]}
+          walletId={wallet.id}
+          getDelta={getDelta}
+        />
+      ))}
 
-      {/* States */}
-      {wallet.status === 'loading' && (
-        <div className="p-3"><div className="skeleton h-4 w-24" /></div>
-      )}
-      {wallet.status === 'error' && (
-        <div className="p-3 form-error">{wallet.errorMsg ?? 'Error'}</div>
-      )}
-      {wallet.status === 'ok' && (
-        wallet.tokens.length === 0 ? (
-          <div className="p-3 text-caption text-text-subtle">No balance</div>
-        ) : (
-          <>
-            <Card.Body>
-          <div className="table-wrapper">
-              <table className="table table-compact">
-                <thead>
-                  {table.getHeaderGroups().map((hg) => (
-                    <tr key={hg.id}>
-                      {hg.headers.map((h) => (
-                        <th key={h.id}>{flexRender(h.column.columnDef.header, h.getContext())}</th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map((row) => (
-                    <tr key={row.id}>
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card.Body>
-            <Card.Footer className="mt-auto">
-              <span className="text-caption text-text-subtle">Total</span>
-              <span className="text-caption font-semibold">${fmt2(totalUsd)}</span>
-            </Card.Footer>
-          </>
-        )
-      )}
+      <Card.Footer className="mt-auto">
+        <span className="text-caption text-text-subtle">Total</span>
+        <span className="text-caption font-semibold">
+          ${fmt2(totalUsd)}{isPartialError ? ' *' : ''}
+        </span>
+      </Card.Footer>
     </Card>
   )
 }

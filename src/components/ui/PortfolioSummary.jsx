@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table'
 import Card from './Card'
+import { tokenUsd } from '@/utils/tokenUsd'
 
 const TOKEN_LABELS = { btc: 'Bitcoin', eth: 'Ethereum', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron', usdt: 'Tether USD', usdc: 'USD Coin' }
 
@@ -17,25 +18,27 @@ const TOKEN_COLORS = {
 
 const fmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
-export function PortfolioSummary({ wallets, getDelta }) {
+export function PortfolioSummary({ wallets, getDelta, prices }) {
   const loadedWallets = wallets.filter((w) => w.status === 'ok')
 
   const { data, totalUsd } = useMemo(() => {
     const map = new Map()
     for (const wallet of loadedWallets) {
       for (const token of wallet.tokens) {
+        const usd = tokenUsd(token, prices)
+        const unitPrice = token.balance > 0 ? usd / token.balance : 0
         const delta = getDelta(wallet.id, token.key, token.balance)
         const existing = map.get(token.key)
         if (existing) {
-          existing.usd += token.usd
+          existing.usd += usd
           if (delta !== null)
-            existing.deltaUsd = (existing.deltaUsd ?? 0) + delta * (token.usd / token.balance || 1)
+            existing.deltaUsd = (existing.deltaUsd ?? 0) + delta * unitPrice
         } else {
           map.set(token.key, {
             key: token.key,
             label: TOKEN_LABELS[token.key] ?? token.key,
-            usd: token.usd,
-            deltaUsd: delta !== null ? delta * (token.usd / token.balance || 1) : null,
+            usd,
+            deltaUsd: delta !== null ? delta * unitPrice : null,
           })
         }
       }
@@ -43,7 +46,7 @@ export function PortfolioSummary({ wallets, getDelta }) {
     const rows = Array.from(map.values()).sort((a, b) => b.usd - a.usd)
     const total = rows.reduce((s, t) => s + t.usd, 0)
     return { data: rows, totalUsd: total }
-  }, [loadedWallets, getDelta])
+  }, [loadedWallets, getDelta, prices])
 
   const columns = useMemo(() => [
     {

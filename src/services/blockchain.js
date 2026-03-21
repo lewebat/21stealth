@@ -1,4 +1,3 @@
-import { getPrices } from './prices'
 import { BLOCKCHAIN_API } from './blockchainApi'
 
 async function fetchBalance(chain, address) {
@@ -21,15 +20,9 @@ async function fetchBalance(chain, address) {
   return data.tokens
 }
 
-async function withPrices(chain, address, priceMap) {
-  const [rawTokens, prices] = await Promise.all([fetchBalance(chain, address), getPrices()])
-  const map = priceMap(prices)
-  return rawTokens.map((t) => ({ ...t, usd: t.balance * (map[t.key] ?? 1) }))
-}
-
-export const fetchEthBalances  = (address) => withPrices('eth',  address, (p) => ({ eth: p.ethereum.usd, usdt: 1, usdc: 1 }))
-export const fetchBtcBalances  = (address) => withPrices('btc',  address, (p) => ({ btc: p.bitcoin.usd }))
-export const fetchSolBalances  = (address) => withPrices('sol',  address, (p) => ({ sol: p.solana.usd }))
-export const fetchLtcBalances  = (address) => withPrices('ltc',  address, (p) => ({ ltc: p.litecoin.usd }))
-export const fetchDogeBalances = (address) => withPrices('doge', address, (p) => ({ doge: p.dogecoin.usd }))
-export const fetchTrxBalances  = (address) => withPrices('trx',  address, (p) => ({ trx: p.tron.usd, usdt: 1, usdc: 1 }))
+export const fetchEthBalances  = (address) => fetchBalance('eth',  address)
+export const fetchBtcBalances  = (address) => fetchBalance('btc',  address)
+export const fetchSolBalances  = (address) => fetchBalance('sol',  address)
+export const fetchLtcBalances  = (address) => fetchBalance('ltc',  address)
+export const fetchDogeBalances = (address) => fetchBalance('doge', address)
+export const fetchTrxBalances  = (address) => fetchBalance('trx',  address)

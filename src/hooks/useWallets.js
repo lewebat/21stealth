@@ -25,6 +25,7 @@ function fetchBalances(chain, address) {
     case 'ltc':  return fetchLtcBalances(address)
     case 'doge': return fetchDogeBalances(address)
     case 'trx':  return fetchTrxBalances(address)
+    default: throw new Error(`Unsupported chain: ${chain}`)
   }
 }
 
@@ -146,10 +147,12 @@ export function useWallets() {
     if (!currentWallet) return
     const existingAddrs = new Set(currentWallet.addresses)
 
+    // Compute new addresses before entering the updater
+    const newAddresses = patch.addresses ? [...new Set(patch.addresses)] : currentWallet.addresses
+    if (newAddresses.length === 0) return  // guard: UI prevents this, silent no-op is safe
+
     setWallets(prev => prev.map(w => {
       if (w.id !== id) return w
-      const newAddresses = patch.addresses ? [...new Set(patch.addresses)] : w.addresses
-      if (newAddresses.length === 0) throw new Error('At least one address required')
       const label = patch.label !== undefined ? patch.label : w.label
 
       const addrTokens = {}
@@ -166,7 +169,7 @@ export function useWallets() {
 
     // Load balances for newly added addresses only
     if (patch.addresses) {
-      const newAddrs = patch.addresses.filter(a => !existingAddrs.has(a))
+      const newAddrs = newAddresses.filter(a => !existingAddrs.has(a))
       for (const addr of newAddrs) {
         loadOneAddress(id, currentWallet.chain, addr, false)
       }

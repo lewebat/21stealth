@@ -14,8 +14,16 @@ export function ConfigActions({ wallets, history, onImport }) {
   const [fileHandle, setFileHandle] = useState(null)
   const [savedPassword, setSavedPassword] = useState('')
   const [isEncrypted, setIsEncrypted] = useState(false)
+  const [savedFlash, setSavedFlash] = useState(false)
+  const savedFlashRef = useRef(null)
 
   const closeModal = () => { setModal(null); setPassword(''); setError('') }
+
+  function flashSaved() {
+    if (savedFlashRef.current) clearTimeout(savedFlashRef.current)
+    setSavedFlash(true)
+    savedFlashRef.current = setTimeout(() => setSavedFlash(false), 2000)
+  }
 
   useEffect(() => {
     if (!supportsFileAccess || !fileHandle || wallets.length === 0) return
@@ -71,6 +79,7 @@ export function ConfigActions({ wallets, history, onImport }) {
     if (fileHandle) {
       try {
         await saveToHandle(fileHandle, wallets, history, isEncrypted ? savedPassword : undefined)
+        flashSaved()
       } catch {
         setFileHandle(null)
       }
@@ -88,6 +97,7 @@ export function ConfigActions({ wallets, history, onImport }) {
       setIsEncrypted(usePassword)
       setSavedPassword(pwd ?? '')
       closeModal()
+      flashSaved()
     } catch {
       closeModal()
     }
@@ -103,7 +113,7 @@ export function ConfigActions({ wallets, history, onImport }) {
           Export
         </Button>
         <Button variant="secondary" size="sm" onClick={handleSave} disabled={wallets.length === 0}>
-          Save
+          {savedFlash ? 'Saved ✓' : 'Save'}
         </Button>
         <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileChange} className="visually-hidden" />
       </div>

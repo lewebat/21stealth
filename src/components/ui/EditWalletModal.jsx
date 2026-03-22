@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Modal } from './Modal'
-import { Input, FormGroup } from './Form'
+import { FloatInput } from './Form'
 import Button from './Button'
 import { detectChain } from '@utils/detectChain'
 
@@ -90,15 +90,13 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
       <Modal.Body>
         <div className="stack stack-md">
 
-          <FormGroup label="Label" htmlFor="edit-label">
-            <Input
-              id="edit-label"
-              type="text"
-              value={label}
-              onChange={e => setLabel(e.target.value)}
-              placeholder="Wallet label"
-            />
-          </FormGroup>
+          <FloatInput
+            id="edit-label"
+            label="Label"
+            type="text"
+            value={label}
+            onChange={e => setLabel(e.target.value)}
+          />
 
           {/* Per-chain entry sections */}
           {entries.map(({ chain, addresses }) => {
@@ -140,9 +138,9 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                   {!atMax ? (
                     <div>
                       <div className="flex gap-2">
-                        <Input
+                        <FloatInput
+                          label={`New ${chain.toUpperCase()} address`}
                           type="text"
-                          placeholder={`New ${chain.toUpperCase()} address…`}
                           value={input.value}
                           onChange={e => setEntryInput(chain, e.target.value)}
                           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddress(chain) } }}
@@ -162,11 +160,10 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
 
           {/* Add new chain entry */}
           <div>
-            <div className="form-label mb-2">Add another chain</div>
             <div className="flex gap-2">
-              <Input
+              <FloatInput
+                label="Add another chain — address auto-detected"
                 type="text"
-                placeholder="Enter address — chain auto-detected"
                 value={newChainAddr}
                 onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChainEntry() } }}

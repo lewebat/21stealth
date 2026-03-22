@@ -58,6 +58,30 @@ export function Input({ state, size, iconLeft, iconRight, className = '', ...pro
   )
 }
 
+/**
+ * FloatInput — input with an animated floating label.
+ * The label sits inside the field and floats up on focus or when filled.
+ * @param {string} label
+ * @param {string} id
+ * @param {React.ReactNode} iconRight
+ * @param {'error'|'success'|''} state
+ */
+export function FloatInput({ label, id, iconRight, state, className = '', ...props }) {
+  const stateClass = state === 'error' ? 'input-error' : state === 'success' ? 'input-success' : ''
+  return (
+    <div className="input-float input-wrapper">
+      <input
+        id={id}
+        placeholder=" "
+        className={['input', iconRight && 'input--icon-right', stateClass, className].filter(Boolean).join(' ')}
+        {...props}
+      />
+      {label && <label htmlFor={id} className="input-float-label">{label}</label>}
+      {iconRight && <span className="input-icon-right">{iconRight}</span>}
+    </div>
+  )
+}
+
 export function Textarea({ state, className = '', ...props }) {
   const stateClass = state === 'error' ? 'input-error' : state === 'success' ? 'input-success' : ''
   return <textarea className={['textarea', stateClass, className].filter(Boolean).join(' ')} {...props} />

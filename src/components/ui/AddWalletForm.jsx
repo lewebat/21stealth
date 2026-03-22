@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { detectChain } from '@utils/detectChain'
-import { FormGroup, Input } from './Form'
+import { FloatInput } from './Form'
 import Button from './Button'
 import { Modal } from './Modal'
 
@@ -84,35 +84,31 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
         <Modal.Body>
           <div className="stack stack-md">
 
-            <FormGroup label="Label (optional)" htmlFor="wallet-label">
-              <Input
-                id="wallet-label"
-                type="text"
-                placeholder="e.g. Trust Wallet"
-                value={label}
-                onChange={e => setLabel(e.target.value)}
-                autoFocus
-              />
-            </FormGroup>
+            <FloatInput
+              id="wallet-label"
+              label="Label (optional)"
+              type="text"
+              value={label}
+              onChange={e => setLabel(e.target.value)}
+              autoFocus
+            />
 
-            <FormGroup label="Wallet address" htmlFor="wallet-address">
-              <Input
-                id="wallet-address"
-                type="text"
-                placeholder="Enter address — chain auto-detected"
-                value={firstAddr}
-                onChange={e => { setFirstAddr(e.target.value); setSameChainAddrs([]); setNewSameError('') }}
-                required
-                className="font-mono"
-                iconRight={
-                  firstAddr.length > 0 ? (
-                    detectedChain
-                      ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[detectedChain]}</span>
-                      : <span className="text-danger text-xs font-semibold">Unknown</span>
-                  ) : null
-                }
-              />
-            </FormGroup>
+            <FloatInput
+              id="wallet-address"
+              label="Wallet address — chain auto-detected"
+              type="text"
+              value={firstAddr}
+              onChange={e => { setFirstAddr(e.target.value); setSameChainAddrs([]); setNewSameError('') }}
+              required
+              className="font-mono"
+              iconRight={
+                firstAddr.length > 0 ? (
+                  detectedChain
+                    ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[detectedChain]}</span>
+                    : <span className="text-danger text-xs font-semibold">Unknown</span>
+                ) : null
+              }
+            />
 
             {detectedChain && (sameChainAddrs.length > 0 || !atMaxSameChain) && (
               <div>
@@ -127,9 +123,9 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
                   {!atMaxSameChain ? (
                     <div>
                       <div className="flex gap-2">
-                        <Input
+                        <FloatInput
+                          label={`Additional ${detectedChain.toUpperCase()} address`}
                           type="text"
-                          placeholder={`Additional ${detectedChain.toUpperCase()} address…`}
                           value={newSameAddr}
                           onChange={e => { setNewSameAddr(e.target.value); setNewSameError('') }}
                           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddSameChain() } }}
@@ -165,11 +161,10 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
 
             {detectedChain && (
               <div>
-                <div className="form-label mb-2">Add another chain (optional)</div>
                 <div className="flex gap-2">
-                  <Input
+                  <FloatInput
+                    label="Add another chain — address auto-detected"
                     type="text"
-                    placeholder="Enter address — chain auto-detected"
                     value={newChainAddr}
                     onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChain() } }}
@@ -178,7 +173,6 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
                   <Button type="button" variant="secondary" onClick={handleAddChain}>+</Button>
                 </div>
                 {newChainError && <p className="form-error mt-1">{newChainError}</p>}
-                <p className="text-caption text-text-muted mt-1">Supports ETH, BTC, SOL, LTC, DOGE, TRX</p>
               </div>
             )}
 

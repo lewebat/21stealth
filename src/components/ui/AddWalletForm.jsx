@@ -50,9 +50,9 @@ export function AddWalletForm({ onAdd }) {
     const trimmed = newChainAddr.trim()
     if (!trimmed) return
     const detected = detectChain(trimmed)
-    if (!detected) { setNewChainError('Unbekannte Adresse'); return }
+    if (!detected) { setNewChainError('Unknown address'); return }
     if (usedChains.has(detected)) {
-      setNewChainError(`${CHAIN_LABELS[detected] ?? detected} bereits vorhanden — füge weitere Adressen zum bestehenden Eintrag hinzu`)
+      setNewChainError(`${CHAIN_LABELS[detected] ?? detected} already exists — add more addresses to the existing entry`)
       return
     }
     setExtraEntries(prev => [...prev, { chain: detected, addresses: [trimmed] }])

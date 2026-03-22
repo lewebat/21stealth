@@ -33,7 +33,7 @@ function aggregateTokens(addresses, chain, addrTokens) {
   return [...map.values()]
 }
 
-function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, walletId, getDelta, prices }) {
+function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, walletId, getDelta, prices, hideSmall }) {
   // Derive chain-level status: loading if any loading, error if all errored, else ok
   const statuses = addresses.map(a => addrStatus[`${chain}:${a}`] ?? 'loading')
   const chainStatus = statuses.some(s => s === 'loading') ? 'loading'
@@ -44,10 +44,12 @@ function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, wal
     () => aggregateTokens(addresses, chain, addrTokens),
     [addresses, chain, addrTokens]
   )
-  const chainTokens = useMemo(
-    () => tokensWithUsd(rawTokens, prices),
-    [rawTokens, prices]
-  )
+  const chainTokens = useMemo(() => {
+    const tokens = tokensWithUsd(rawTokens, prices)
+      .filter(t => !hideSmall || t.usd >= 1)
+      .sort((a, b) => b.usd - a.usd)
+    return tokens
+  }, [rawTokens, prices, hideSmall])
 
   const columns = useMemo(() => [
     {
@@ -94,7 +96,9 @@ function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, wal
 
   const addrLabel = addresses.length === 1
     ? shorten(addresses[0])
-    : `${addresses.length} Adressen`
+    : `${addresses.length} addresses`
+
+  if (hideSmall && chainStatus === 'ok' && chainTokens.length === 0) return null
 
   return (
     <div className="card-section">
@@ -129,13 +133,22 @@ function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, wal
   )
 }
 
-export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, prices }) {
+export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, prices, hideSmall }) {
   // wallet.tokens is pre-aggregated by recompute() in useWallets — reflects all loaded addresses
   const totalUsd = wallet.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0)
   const allKeys = wallet.entries.flatMap(e => e.addresses.map(a => `${e.chain}:${a}`))
   const isPartialError = wallet.status === 'error' &&
     allKeys.some(k => wallet.addrStatus[k] === 'ok')
   const chainCount = wallet.entries.length
+
+  // Sort entries by total chain USD descending
+  const sortedEntries = useMemo(() => {
+    const chainUsd = new Map()
+    for (const t of wallet.tokens) {
+      chainUsd.set(t.chain, (chainUsd.get(t.chain) ?? 0) + tokenUsd(t, prices))
+    }
+    return [...wallet.entries].sort((a, b) => (chainUsd.get(b.chain) ?? 0) - (chainUsd.get(a.chain) ?? 0))
+  }, [wallet.entries, wallet.tokens, prices])
 
   return (
     <Card className="h-full flex flex-col">
@@ -156,7 +169,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
           <button
             type="button"
             onClick={onEdit}
-            title="Bearbeiten"
+            title="Edit"
             className="btn-icon text-text-muted hover:text-text"
           >
             ✎
@@ -177,7 +190,15 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
       </Card.Header>
 
       <Card.Body>
-        {wallet.entries.map(({ chain, addresses }) => (
+        {hideSmall && sortedEntries.every(({ chain }) =>
+          wallet.tokens.filter(t => t.chain === chain).every(t => tokenUsd(t, prices) < 1)
+        ) && (
+          <div className="text-caption text-text-subtle py-2 flex items-center gap-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            All values below $1
+          </div>
+        )}
+        {sortedEntries.map(({ chain, addresses }) => (
           <ChainSection
             key={chain}
             chain={chain}
@@ -188,6 +209,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
             walletId={wallet.id}
             getDelta={getDelta}
             prices={prices}
+            hideSmall={hideSmall}
           />
         ))}
       </Card.Body>

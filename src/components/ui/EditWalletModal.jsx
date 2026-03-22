@@ -153,7 +153,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                       {input.error && <p className="form-error mt-1">{input.error}</p>}
                     </div>
                   ) : (
-                    <p className="text-caption text-text-muted">Maximum von {MAX_ADDRESSES} Adressen erreicht</p>
+                    <p className="text-caption text-text-muted">Maximum of {MAX_ADDRESSES} addresses reached</p>
                   )}
                 </div>
               </div>

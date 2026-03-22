@@ -111,7 +111,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
   if (data.length === 0) return null
 
   return (
-    <Card>
+    <Card className="h-full">
       <Card.Header>
         <span className="h5">Breakdown</span>
       </Card.Header>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
-import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal, PriceTicker } from '@ui'
+import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal, PriceTicker, Card } from '@ui'
 import { Container, Grid } from '@layout'
 
 export default function DashboardPage() {
@@ -57,16 +57,18 @@ export default function DashboardPage() {
       {wallets.length === 0 ? (
         <Grid>
           <Grid.Col span="full">
-            <div className="card">
-              <div className="card-body flex flex-col items-center py-24 gap-4 text-center">
-                <div className="text-display">🔒</div>
-                <p className="h4">No wallets yet</p>
-                <p className="text-body text-text-muted">Add a wallet address or import your config.</p>
-                <div className="w-full max-w-sm">
-                  <AddWalletForm onAdd={addWallet} />
+            <Card>
+              <Card.Body>
+                <div className="flex flex-col items-center py-24 gap-4 text-center">
+                  <div className="text-display">🔒</div>
+                  <p className="h4">No wallets yet</p>
+                  <p className="text-body text-text-muted">Add a wallet address or import your config.</p>
+                  <div className="w-full max-w-sm">
+                    <AddWalletForm onAdd={addWallet} />
+                  </div>
                 </div>
-              </div>
-            </div>
+              </Card.Body>
+            </Card>
           </Grid.Col>
         </Grid>
       ) : (

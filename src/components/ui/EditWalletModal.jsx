@@ -105,10 +105,10 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
             const input = entryInputs[chain] ?? { value: '', error: '' }
             const atMax = addresses.length >= MAX_ADDRESSES
             return (
-              <div key={chain} className="border border-border rounded-lg overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2 bg-surface">
+              <div key={chain} className="chain-entry">
+                <div className="chain-entry-header">
                   <div className="flex items-center gap-2">
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${CHAIN_BADGE[chain]}`}>
+                    <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>
                       {chain.toUpperCase()}
                     </span>
                     <span className="text-caption text-text-muted">{CHAIN_LABELS[chain]}</span>
@@ -122,7 +122,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                     Chain entfernen
                   </button>
                 </div>
-                <div className="p-3 stack stack-sm">
+                <div className="chain-entry-body stack stack-sm">
                   {addresses.map((addr, i) => (
                     <div key={`${addr}-${i}`} className="flex items-center gap-2">
                       <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>

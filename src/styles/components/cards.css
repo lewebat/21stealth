@@ -43,7 +43,7 @@
 }
 
 .card-body {
-  padding: 1.5rem;
+  padding: 0.75rem 1.5rem;
 }
 
 .card-footer {
@@ -79,3 +79,32 @@
 
 .card-stat__trend--up   { color: var(--color-success); }
 .card-stat__trend--down { color: var(--color-danger); }
+
+/* ── Chain badge ─────────────────────────────────────── */
+.chain-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+/* ── Chain entry (used in EditWalletModal) ───────────── */
+.chain-entry {
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.chain-entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  background-color: var(--color-surface);
+}
+
+.chain-entry-body {
+  padding: 0.75rem;
+}

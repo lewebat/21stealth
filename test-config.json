@@ -1,0 +1,171 @@
+{
+  "version": "1",
+  "exportedAt": "2026-03-22T10:00:00.000Z",
+  "wallets": [
+    {
+      "id": "wallet-test-1",
+      "label": "Main Wallet",
+      "entries": [
+        { "chain": "eth", "addresses": ["0xDEAD000000000000000000000000000000000001"] },
+        { "chain": "btc", "addresses": ["1BitcoinEaterAddressDontSendf59kuE"] }
+      ]
+    },
+    {
+      "id": "wallet-test-2",
+      "label": "Altcoin Bag",
+      "entries": [
+        { "chain": "sol", "addresses": ["So11111111111111111111111111111111111111112"] },
+        { "chain": "doge", "addresses": ["DFundmtrigMDLTxyzBTiDfzFJLNaHScdsM1234567"] }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-01-21",
+      "balances": {
+        "wallet-test-1": { "eth": 2.0, "btc": 0.15, "usdt": 500 },
+        "wallet-test-2": { "sol": 50, "doge": 5000 }
+      }
+    },
+    {
+      "date": "2026-01-24",
+      "balances": {
+        "wallet-test-1": { "eth": 2.0, "btc": 0.15, "usdt": 500 },
+        "wallet-test-2": { "sol": 55, "doge": 5000 }
+      }
+    },
+    {
+      "date": "2026-01-27",
+      "balances": {
+        "wallet-test-1": { "eth": 2.1, "btc": 0.15, "usdt": 500 },
+        "wallet-test-2": { "sol": 55, "doge": 4500 }
+      }
+    },
+    {
+      "date": "2026-01-30",
+      "balances": {
+        "wallet-test-1": { "eth": 2.1, "btc": 0.18, "usdt": 500 },
+        "wallet-test-2": { "sol": 60, "doge": 4500 }
+      }
+    },
+    {
+      "date": "2026-02-02",
+      "balances": {
+        "wallet-test-1": { "eth": 2.1, "btc": 0.18, "usdt": 500 },
+        "wallet-test-2": { "sol": 60, "doge": 4000 }
+      }
+    },
+    {
+      "date": "2026-02-05",
+      "balances": {
+        "wallet-test-1": { "eth": 2.2, "btc": 0.18, "usdt": 1000 },
+        "wallet-test-2": { "sol": 65, "doge": 4000 }
+      }
+    },
+    {
+      "date": "2026-02-08",
+      "balances": {
+        "wallet-test-1": { "eth": 2.2, "btc": 0.20, "usdt": 1000 },
+        "wallet-test-2": { "sol": 65, "doge": 4000 }
+      }
+    },
+    {
+      "date": "2026-02-11",
+      "balances": {
+        "wallet-test-1": { "eth": 2.3, "btc": 0.20, "usdt": 1000 },
+        "wallet-test-2": { "sol": 70, "doge": 3500 }
+      }
+    },
+    {
+      "date": "2026-02-14",
+      "balances": {
+        "wallet-test-1": { "eth": 2.3, "btc": 0.20, "usdt": 1000 },
+        "wallet-test-2": { "sol": 70, "doge": 3500 }
+      }
+    },
+    {
+      "date": "2026-02-17",
+      "balances": {
+        "wallet-test-1": { "eth": 2.3, "btc": 0.22, "usdt": 1000 },
+        "wallet-test-2": { "sol": 75, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-02-20",
+      "balances": {
+        "wallet-test-1": { "eth": 2.4, "btc": 0.22, "usdt": 1000 },
+        "wallet-test-2": { "sol": 75, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-02-23",
+      "balances": {
+        "wallet-test-1": { "eth": 2.4, "btc": 0.22, "usdt": 1500 },
+        "wallet-test-2": { "sol": 80, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-02-26",
+      "balances": {
+        "wallet-test-1": { "eth": 2.4, "btc": 0.25, "usdt": 1500 },
+        "wallet-test-2": { "sol": 80, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-01",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.25, "usdt": 1500 },
+        "wallet-test-2": { "sol": 80, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-04",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.25, "usdt": 1500 },
+        "wallet-test-2": { "sol": 85, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-07",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.28, "usdt": 1500 },
+        "wallet-test-2": { "sol": 85, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-10",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.28, "usdt": 2000 },
+        "wallet-test-2": { "sol": 90, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-13",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.28, "usdt": 2000 },
+        "wallet-test-2": { "sol": 90, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-16",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.30, "usdt": 2000 },
+        "wallet-test-2": { "sol": 95, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-19",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.30, "usdt": 2000 },
+        "wallet-test-2": { "sol": 95, "doge": 3000 }
+      }
+    },
+    {
+      "date": "2026-03-21",
+      "balances": {
+        "wallet-test-1": { "eth": 2.5, "btc": 0.30, "usdt": 2000 },
+        "wallet-test-2": { "sol": 100, "doge": 3000 }
+      }
+    }
+  ]
+}

@@ -10,6 +10,8 @@ if (file_exists($cache_file) && time() - filemtime($cache_file) < $cache_ttl) {
     exit;
 }
 
+$api_key = 'YOUR_API_KEY_HERE';
+
 $coins = [
     'bitcoin'  => 'BTC',
     'ethereum' => 'ETH',
@@ -21,13 +23,14 @@ $coins = [
 
 $result = [];
 
+$context = stream_context_create(['http' => [
+    'timeout' => 10,
+    'header'  => "authorization: Apikey {$api_key}",
+]]);
+
 foreach ($coins as $id => $symbol) {
-    $url      = "https://min-api.cryptocompare.com/data/v2/histoday?fsym={$symbol}&tsym=USD&limit=365";
-    $response = @file_get_contents(
-        $url,
-        false,
-        stream_context_create(['http' => ['timeout' => 10]])
-    );
+    $url      = "https://min-api.cryptocompare.com/data/v2/histoday?fsym={$symbol}&tsym=USD&limit=2000";
+    $response = @file_get_contents($url, false, $context);
     if ($response === false) continue;
 
     $data = json_decode($response, true);

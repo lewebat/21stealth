@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
-import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal, PriceTicker, Card, Button } from '@ui'
+import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, WalletModal, ConfigActions, PriceTicker, Card, Button } from '@ui'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { Container, Grid } from '@layout'
 
@@ -136,20 +136,16 @@ export default function DashboardPage() {
         </>
       )}
 
-      <AddWalletForm
-        isOpen={addingWallet}
-        onClose={() => setAddingWallet(false)}
-        onAdd={(label, entries) => { addWallet(label, entries); setAddingWallet(false) }}
+      <WalletModal
+        isOpen={addingWallet || !!editingWallet}
+        wallet={editingWallet}
+        onClose={() => { setAddingWallet(false); setEditingWalletId(null) }}
+        onSave={(id, data) => {
+          if (id) { updateWallet(id, data) } else { addWallet(data.label, data.entries) }
+          setAddingWallet(false)
+          setEditingWalletId(null)
+        }}
       />
-
-      {editingWallet && (
-        <EditWalletModal
-          wallet={editingWallet}
-          isOpen={true}
-          onClose={() => setEditingWalletId(null)}
-          onSave={(id, patch) => { updateWallet(id, patch); setEditingWalletId(null) }}
-        />
-      )}
 
     </Container>
   )

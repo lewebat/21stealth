@@ -93,20 +93,20 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <h2 className="h4">Wallets</h2>
             <div className="flex items-center gap-2">
-              <button
-                type="button"
+              <Button
+                variant={hideSmall ? 'primary' : 'secondary'}
+                size="sm"
                 onClick={() => setHideSmall(v => !v)}
-                className={`btn btn-sm ${hideSmall ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {hideSmall ? 'Show all' : 'Hide small values'}
-              </button>
-              <button
-                type="button"
+              </Button>
+              <Button
+                variant={fullAddresses ? 'primary' : 'secondary'}
+                size="sm"
                 onClick={() => setFullAddresses(v => !v)}
-                className={`btn btn-sm ${fullAddresses ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {fullAddresses ? 'Shorten addresses' : 'Show full addresses'}
-              </button>
+              </Button>
               <Button variant="primary" size="sm" onClick={() => setAddingWallet(true)}>
                 + Add wallet
               </Button>

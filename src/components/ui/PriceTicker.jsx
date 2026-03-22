@@ -19,42 +19,21 @@ function formatChange(n) {
   return sign + n.toFixed(1) + '%'
 }
 
-const tickerStyles = `
-  @keyframes ticker-scroll {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  .ticker-track {
-    animation: ticker-scroll 30s linear infinite;
-  }
-  .ticker-track:hover {
-    animation-play-state: paused;
-  }
-`
-
-function CoinItem({ id, symbol, coin }) {
+function CoinItem({ symbol, coin }) {
   return (
     <div className="flex items-center gap-1.5 shrink-0 px-4">
-      <span className="text-xs font-bold" style={{ color: 'var(--color-sidebar-text)' }}>
-        {symbol}
-      </span>
+      <span className="ticker-symbol">{symbol}</span>
       {coin ? (
         <>
-          <span className="text-xs font-mono" style={{ color: 'var(--color-sidebar-text)' }}>
-            {formatUsd(coin.usd)}
-          </span>
+          <span className="ticker-price">{formatUsd(coin.usd)}</span>
           {coin.change24h != null && (
-            <span
-              className="text-xs font-mono"
-              style={{ color: coin.change24h >= 0 ? 'var(--color-success)' : 'var(--color-danger)' }}
-            >
+            <span className={`ticker-price ${coin.change24h >= 0 ? 'text-success' : 'text-danger'}`}>
               {formatChange(coin.change24h)}
             </span>
           )}
-
         </>
       ) : (
-        <span className="inline-block h-3 w-20 rounded animate-pulse" style={{ background: 'var(--color-sidebar-border)' }} />
+        <span className="inline-block h-3 w-20 rounded animate-pulse ticker-skeleton" />
       )}
     </div>
   )
@@ -62,8 +41,7 @@ function CoinItem({ id, symbol, coin }) {
 
 export function PriceTicker({ prices }) {
   return (
-    <div className="rounded-lg overflow-hidden" style={{ background: 'var(--color-sidebar-bg)' }}>
-      <style>{tickerStyles}</style>
+    <div className="ticker-wrapper">
       <div className="overflow-hidden py-2">
         <div className="ticker-track flex w-max">
           {/* Duplicate coins for seamless loop */}

@@ -35,8 +35,8 @@ export default function AppLayout() {
         </nav>
       </aside>
 
-      <div className="main-content flex flex-col">
-        <header className="flex items-center gap-4 px-6 py-3 bg-background">
+      <div className="main-content">
+        <header className="app-header">
           <div className="flex-1" />
           <button
             className="btn-icon transition-base"

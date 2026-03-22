@@ -106,3 +106,8 @@
   padding: 0.5rem;
   border-radius: var(--radius-md);
 }
+
+.btn-icon-xs {
+  padding: 0.1rem;
+  font-size: 10px;
+}

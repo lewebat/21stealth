@@ -118,8 +118,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                             <button
                               type="button"
                               onClick={() => toggleExpand(chain)}
-                              className="btn-icon text-text-subtle hover:text-text"
-                              style={{ padding: '0.1rem', fontSize: '10px' }}
+                              className="btn-icon btn-icon-xs text-text-subtle hover:text-text"
                               title={expandedChains.has(chain) ? 'Hide addresses' : 'Show addresses'}
                             >
                               {expandedChains.has(chain) ? '▲' : '▼'}

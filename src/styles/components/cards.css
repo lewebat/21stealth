@@ -134,6 +134,42 @@
   padding-top: 0 !important;
 }
 
+/* ── Price ticker ────────────────────────────────────── */
+.ticker-wrapper {
+  background-color: var(--color-sidebar-bg);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.ticker-symbol {
+  color: var(--color-sidebar-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ticker-price {
+  color: var(--color-sidebar-text);
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+}
+
+.ticker-skeleton {
+  background-color: var(--color-sidebar-border);
+}
+
+@keyframes ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-track {
+  animation: ticker-scroll 30s linear infinite;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
 /* ── Chain entry (used in EditWalletModal) ───────────── */
 .chain-entry {
   border: 1px solid var(--color-border);

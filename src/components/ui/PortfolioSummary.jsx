@@ -38,7 +38,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
 
   const { data, totalUsd } = useMemo(() => {
     const map = new Map()
-    for (const wallet of loadedWallets) {
+    for (const wallet of wallets.filter((w) => w.status === 'ok')) {
       for (const token of wallet.tokens) {
         const usd = tokenUsd(token, prices)
         const unitPrice = token.balance > 0 ? usd / token.balance : 0
@@ -65,7 +65,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
     const rows = Array.from(map.values()).sort((a, b) => b.usd - a.usd)
     const total = rows.reduce((s, t) => s + t.usd, 0)
     return { data: rows, totalUsd: total }
-  }, [loadedWallets, getDelta, prices])
+  }, [wallets, getDelta, prices])
 
   const valueColumns = useMemo(() => [
     {

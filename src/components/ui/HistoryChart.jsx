@@ -41,11 +41,12 @@ export function HistoryChart({ history, wallets, prices }) {
 
   const chartData = useMemo(() => {
     if (!prices || history.length === 0) return []
+    const loaded = wallets.filter((w) => w.status === 'ok')
     return history.map((snap) => {
       const point = { date: formatDate(snap.date) }
       if (selected === 'total') {
         let total = 0
-        for (const wallet of loadedWallets) {
+        for (const wallet of loaded) {
           const wb = snap.balances[wallet.id]
           if (wb) total += calcUsd(wb, prices, volatileOnly)
         }
@@ -56,11 +57,11 @@ export function HistoryChart({ history, wallets, prices }) {
       }
       return point
     })
-  }, [history, prices, selected, volatileOnly, loadedWallets])
+  }, [history, prices, selected, volatileOnly, wallets])
 
   if (history.length < 2 || !prices) return (
     <Card>
-      <Card.Body>
+      <Card.Body className="card-body-auto">
         <div className="flex items-center gap-3 py-6 text-text-subtle">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
           <span className="text-caption">Portfolio history will appear here once balance changes have been recorded on at least two different days.</span>
@@ -105,7 +106,7 @@ export function HistoryChart({ history, wallets, prices }) {
           {volatileOnly ? 'Include stablecoins' : 'Exclude stablecoins'}
         </Button>
       </Card.Header>
-      <Card.Body>
+      <Card.Body className="card-body-auto">
         <div className="h-40 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
@@ -129,6 +130,7 @@ export function HistoryChart({ history, wallets, prices }) {
         </div>
         <div className="flex flex-wrap gap-2 pt-4">
           <button
+            type="button"
             onClick={() => setSelected('total')}
             className={selected === 'total' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
           >
@@ -136,6 +138,7 @@ export function HistoryChart({ history, wallets, prices }) {
           </button>
           {loadedWallets.map((wallet) => (
             <button
+              type="button"
               key={wallet.id}
               onClick={() => setSelected(wallet.id)}
               className={selected === wallet.id ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}

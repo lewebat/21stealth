@@ -44,10 +44,10 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
     if (!value) return
     const entry = entries.find(e => e.chain === chain)
     if (!entry) return
-    if (entry.addresses.includes(value)) { setEntryError(chain, 'Adresse bereits vorhanden'); return }
+    if (entry.addresses.includes(value)) { setEntryError(chain, 'Address already added'); return }
     const detected = detectChain(value)
     if (!detected || detected !== chain) {
-      setEntryError(chain, `Ungültige Adresse (erwartet: ${chain.toUpperCase()})`)
+      setEntryError(chain, `Invalid address (expected: ${chain.toUpperCase()})`)
       return
     }
     setEntries(prev => prev.map(e => e.chain === chain ? { ...e, addresses: [...e.addresses, value] } : e))
@@ -69,9 +69,9 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
     const trimmed = newChainAddr.trim()
     if (!trimmed) return
     const detected = detectChain(trimmed)
-    if (!detected) { setNewChainError('Unbekannte Adresse'); return }
+    if (!detected) { setNewChainError('Unknown address'); return }
     if (usedChains.has(detected)) {
-      setNewChainError(`${CHAIN_LABELS[detected] ?? detected} bereits vorhanden`)
+      setNewChainError(`${CHAIN_LABELS[detected] ?? detected} already exists — add more addresses to the existing entry`)
       return
     }
     setEntries(prev => [...prev, { chain: detected, addresses: [trimmed] }])
@@ -86,7 +86,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Wallet bearbeiten" size="md">
+    <Modal isOpen={isOpen} onClose={onClose} title="Edit wallet" size="md">
       <Modal.Body>
         <div className="stack stack-md">
 
@@ -96,7 +96,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
               type="text"
               value={label}
               onChange={e => setLabel(e.target.value)}
-              placeholder="Wallet Label"
+              placeholder="Wallet label"
             />
           </FormGroup>
 
@@ -119,7 +119,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                     disabled={entries.length <= 1}
                     className="text-caption text-danger disabled:opacity-30 hover:underline"
                   >
-                    Chain entfernen
+                    Remove chain
                   </button>
                 </div>
                 <div className="chain-entry-body stack stack-sm">
@@ -131,7 +131,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                         onClick={() => handleRemoveAddress(chain, addr)}
                         disabled={addresses.length <= 1}
                         className="btn-icon text-danger disabled:opacity-30"
-                        title="Entfernen"
+                        title="Remove"
                       >
                         ✕
                       </button>
@@ -142,7 +142,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                       <div className="flex gap-2">
                         <Input
                           type="text"
-                          placeholder={`Neue ${chain.toUpperCase()} Adresse…`}
+                          placeholder={`New ${chain.toUpperCase()} address…`}
                           value={input.value}
                           onChange={e => setEntryInput(chain, e.target.value)}
                           onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddress(chain) } }}
@@ -162,11 +162,11 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
 
           {/* Add new chain entry */}
           <div>
-            <div className="form-label mb-2">Weitere Chain hinzufügen</div>
+            <div className="form-label mb-2">Add another chain</div>
             <div className="flex gap-2">
               <Input
                 type="text"
-                placeholder="Adresse eingeben — Chain wird erkannt…"
+                placeholder="Enter address — chain auto-detected"
                 value={newChainAddr}
                 onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChainEntry() } }}
@@ -180,8 +180,8 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button type="button" variant="secondary" onClick={onClose}>Abbrechen</Button>
-        <Button type="button" variant="primary" onClick={handleSave}>Speichern</Button>
+        <Button type="button" variant="secondary" onClick={onClose}>Cancel</Button>
+        <Button type="button" variant="primary" onClick={handleSave}>Save</Button>
       </Modal.Footer>
     </Modal>
   )

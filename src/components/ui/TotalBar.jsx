@@ -13,7 +13,7 @@ export function TotalBar({ wallets, prices, onRefreshAll }) {
       <Card.Header>
         <span className="h5">Total Portfolio</span>
       </Card.Header>
-      <Card.Body>
+      <Card.Body className="card-body-auto">
         <div className="h2">
           ${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>

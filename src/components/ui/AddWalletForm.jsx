@@ -151,9 +151,11 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
                 <div className="form-label mb-2">Additional chains</div>
                 <div className="stack stack-sm">
                   {extraEntries.map(({ chain, addresses }) => (
-                    <div key={chain} className="flex items-center gap-2 p-2 rounded border border-border bg-surface">
-                      <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
-                      <span className="flex-1 font-mono text-caption text-text-muted truncate">{addresses[0]}</span>
+                    <div key={chain} className="chain-entry-header">
+                      <div className="flex items-center gap-2">
+                        <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
+                        <span className="font-mono text-caption text-text-muted truncate">{addresses[0]}</span>
+                      </div>
                       <button type="button" onClick={() => handleRemoveChainEntry(chain)} className="btn-icon text-danger">✕</button>
                     </div>
                   ))}

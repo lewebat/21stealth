@@ -58,6 +58,9 @@
 /* ── Sidebar layout ─────────────────────────────────── */
 .app-sidebar {
   width: 4.5rem;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   flex-shrink: 0;
   background-color: var(--color-background);
   color: var(--color-sidebar-text);

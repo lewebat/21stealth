@@ -44,6 +44,19 @@
 
 .card-body {
   padding: 0.75rem 1.5rem;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-background) transparent;
+}
+
+.card-body::-webkit-scrollbar {
+  display: none;
+}
+
+.card-body-auto {
+  max-height: none;
+  overflow-y: visible;
 }
 
 .card-footer {
@@ -87,11 +100,17 @@
 
 .card-section {
   padding: 0.75rem 1.5rem;
-  border-top: 1px solid var(--color-border);
+  position: relative;
 }
 
-.card-section:first-child {
-  border-top: none;
+.card-section + .card-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1.5rem;
+  right: 1.5rem;
+  height: 1px;
+  background: var(--color-border);
 }
 
 /* ── Chain badge ─────────────────────────────────────── */
@@ -102,6 +121,17 @@
   border-radius: 0.25rem;
   flex-shrink: 0;
   line-height: 1.4;
+}
+
+/* ── Chain header row (in unified WalletCard table) ──── */
+.chain-header-row td {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.25rem !important;
+  border-bottom: none !important;
+}
+
+.chain-header-row:first-child td {
+  padding-top: 0 !important;
 }
 
 /* ── Chain entry (used in EditWalletModal) ───────────── */

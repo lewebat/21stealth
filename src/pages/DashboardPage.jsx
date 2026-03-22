@@ -60,7 +60,7 @@ export default function DashboardPage() {
         <Grid>
           <Grid.Col span="full">
             <Card>
-              <Card.Body>
+              <Card.Body className="card-body-auto">
                 <div className="flex flex-col items-center py-24 gap-4 text-center">
                   <div className="text-display">🔒</div>
                   <p className="h4">No wallets yet</p>

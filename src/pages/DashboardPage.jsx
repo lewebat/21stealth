@@ -95,14 +95,14 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <Button
                 variant={hideSmall ? 'primary' : 'secondary'}
-                size="sm"
+                size="xs"
                 onClick={() => setHideSmall(v => !v)}
               >
                 {hideSmall ? 'Show all' : 'Hide small values'}
               </Button>
               <Button
                 variant={fullAddresses ? 'primary' : 'secondary'}
-                size="sm"
+                size="xs"
                 onClick={() => setFullAddresses(v => !v)}
               >
                 {fullAddresses ? 'Shorten addresses' : 'Show full addresses'}

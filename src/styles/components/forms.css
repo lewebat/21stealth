@@ -178,4 +178,4 @@
 .input-wrapper .input-icon-left  { position: absolute; left: 0.75rem; color: var(--color-text-muted); pointer-events: none; }
 .input-wrapper .input-icon-right { position: absolute; right: 0.75rem; color: var(--color-text-muted); }
 .input-wrapper .input--icon-left  { padding-left: 2.5rem; }
-.input-wrapper .input--icon-right { padding-right: 2.5rem; }
+.input-wrapper .input--icon-right { padding-right: 5.5rem; }

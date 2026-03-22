@@ -120,24 +120,29 @@ export function WalletModal({ isOpen, onClose, wallet, onSave }) {
 
           {/* Unified input — auto-routes by chain detection */}
           <div>
-            <div className="flex gap-2">
-              <FloatInput
-                label={entries.length === 0 ? 'Wallet address — chain auto-detected' : 'Add another address or chain'}
-                type="text"
-                value={newAddr}
-                onChange={e => { setNewAddr(e.target.value); setNewAddrError('') }}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddr() } }}
-                className="font-mono flex-1"
-                iconRight={
-                  newAddr.length > 0 ? (
+            <FloatInput
+              label={entries.length === 0 ? 'Wallet address — chain auto-detected' : 'Add another address or chain'}
+              type="text"
+              value={newAddr}
+              onChange={e => { setNewAddr(e.target.value); setNewAddrError('') }}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddr() } }}
+              className="font-mono"
+              iconRight={
+                <div className="flex items-center gap-2">
+                  {newAddr.length > 0 && (
                     newAddrChain
                       ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[newAddrChain]}</span>
                       : <span className="text-danger text-xs font-semibold">Unknown</span>
-                  ) : null
-                }
-              />
-              <Button type="button" variant="secondary" onClick={handleAddAddr}>+</Button>
-            </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleAddAddr}
+                    className="btn-icon-xs text-text-muted hover:text-text"
+                    tabIndex={-1}
+                  >+</button>
+                </div>
+              }
+            />
             {newAddrError && <p className="form-error mt-1">{newAddrError}</p>}
           </div>
 

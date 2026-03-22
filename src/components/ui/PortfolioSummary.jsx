@@ -28,14 +28,16 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
         const usd = tokenUsd(token, prices)
         const unitPrice = token.balance > 0 ? usd / token.balance : 0
         const delta = getDelta(wallet.id, token.key, token.balance)
-        const existing = map.get(token.key)
+        const mapKey = `${token.chain}:${token.key}`
+        const existing = map.get(mapKey)
         if (existing) {
           existing.usd += usd
           if (delta !== null)
             existing.deltaUsd = (existing.deltaUsd ?? 0) + delta * unitPrice
         } else {
-          map.set(token.key, {
+          map.set(mapKey, {
             key: token.key,
+            chain: token.chain,
             label: TOKEN_LABELS[token.key] ?? token.key,
             usd,
             deltaUsd: delta !== null ? delta * unitPrice : null,
@@ -59,6 +61,9 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
           <div className="flex items-center gap-2">
             <span className={`text-xs font-bold w-10 ${colors.text}`}>{row.original.key.toUpperCase()}</span>
             <span className="text-caption text-text-muted">{row.original.label}</span>
+            {row.original.chain && (
+              <span className="chain-badge bg-surface-elevated text-text-subtle border border-border">{row.original.chain.toUpperCase()}</span>
+            )}
           </div>
         )
       },

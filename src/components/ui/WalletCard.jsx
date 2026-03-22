@@ -97,47 +97,32 @@ function ChainSection({ chain, addresses, addrTokens, addrStatus, addrError, wal
     : `${addresses.length} Adressen`
 
   return (
-    <div className="border-t border-border">
-      <div className="px-3 pt-2 pb-1 flex items-center gap-2">
-        <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${CHAIN_BADGE[chain]}`}>
+    <div className="card-section">
+      <div className="flex items-center gap-2 mb-1">
+        <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>
           {chain.toUpperCase()}
         </span>
         <span className="text-caption font-mono text-text-subtle truncate">{addrLabel}</span>
       </div>
-      {chainStatus === 'loading' && (
-        <div className="px-3 pb-2"><div className="skeleton h-4 w-24" /></div>
-      )}
-      {chainStatus === 'error' && (
-        <div className="px-3 pb-2 form-error">{firstError ?? 'Error'}</div>
-      )}
+      {chainStatus === 'loading' && <div className="skeleton h-4 w-24" />}
+      {chainStatus === 'error' && <div className="form-error">{firstError ?? 'Error'}</div>}
       {chainStatus === 'ok' && (
         chainTokens.length === 0 ? (
-          <div className="px-3 pb-2 text-caption text-text-subtle">No balance</div>
+          <div className="text-caption text-text-subtle">No balance</div>
         ) : (
-          <Card.Body className="pt-0">
-            <div className="table-wrapper">
-              <table className="table table-compact">
-                <thead>
-                  {table.getHeaderGroups().map(hg => (
-                    <tr key={hg.id}>
-                      {hg.headers.map(h => (
-                        <th key={h.id}>{flexRender(h.column.columnDef.header, h.getContext())}</th>
-                      ))}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody>
-                  {table.getRowModel().rows.map(row => (
-                    <tr key={row.id}>
-                      {row.getVisibleCells().map(cell => (
-                        <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card.Body>
+          <div className="table-wrapper">
+            <table className="table table-compact">
+              <tbody>
+                {table.getRowModel().rows.map(row => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )
       )}
     </div>
@@ -157,11 +142,11 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
       <Card.Header>
         <div className="flex items-center gap-1.5 min-w-0">
           {chainCount === 1 ? (
-            <span className={`text-xs font-bold px-1.5 py-0.5 rounded shrink-0 ${CHAIN_BADGE[wallet.entries[0].chain]}`}>
+            <span className={`chain-badge ${CHAIN_BADGE[wallet.entries[0].chain]}`}>
               {wallet.entries[0].chain.toUpperCase()}
             </span>
           ) : (
-            <span className="text-xs font-bold px-1.5 py-0.5 rounded shrink-0 bg-primary text-text-inverted">
+            <span className="chain-badge bg-primary text-text-inverted">
               {chainCount} Chains
             </span>
           )}
@@ -191,19 +176,21 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
         </div>
       </Card.Header>
 
-      {wallet.entries.map(({ chain, addresses }) => (
-        <ChainSection
-          key={chain}
-          chain={chain}
-          addresses={addresses}
-          addrTokens={wallet.addrTokens}
-          addrStatus={wallet.addrStatus}
-          addrError={wallet.addrError}
-          walletId={wallet.id}
-          getDelta={getDelta}
-          prices={prices}
-        />
-      ))}
+      <Card.Body>
+        {wallet.entries.map(({ chain, addresses }) => (
+          <ChainSection
+            key={chain}
+            chain={chain}
+            addresses={addresses}
+            addrTokens={wallet.addrTokens}
+            addrStatus={wallet.addrStatus}
+            addrError={wallet.addrError}
+            walletId={wallet.id}
+            getDelta={getDelta}
+            prices={prices}
+          />
+        ))}
+      </Card.Body>
 
       <Card.Footer className="mt-auto">
         <span className="text-caption text-text-subtle">Total</span>

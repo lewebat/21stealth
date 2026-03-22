@@ -13,10 +13,10 @@
 }
 
 .card .table th:first-child,
-.card .table td:first-child { padding-left: 1.5rem; }
+.card .table td:first-child { padding-left: 0; }
 
 .card .table th:last-child,
-.card .table td:last-child { padding-right: 1.5rem; }
+.card .table td:last-child { padding-right: 0; }
 
 .table th {
   padding: 0.5rem 0.75rem;
@@ -52,7 +52,7 @@
 }
 
 .table tbody tr:hover {
-  background-color: var(--color-surface);
+  background: linear-gradient(90deg, transparent 0%, var(--color-surface) 25%, var(--color-surface) 75%, transparent 100%);
 }
 
 /* ── Compact variant (for cards) ────────────────────── */
@@ -61,5 +61,5 @@
 }
 
 .table-compact td {
-  padding: 0.375rem 0.5rem;
+  padding: 0.375rem 0;
 }

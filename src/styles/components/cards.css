@@ -80,6 +80,20 @@
 .card-stat__trend--up   { color: var(--color-success); }
 .card-stat__trend--down { color: var(--color-danger); }
 
+/* ── Card section (repeating sections inside a card) ─── */
+.card-body:has(.card-section) {
+  padding: 0;
+}
+
+.card-section {
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.card-section:first-child {
+  border-top: none;
+}
+
 /* ── Chain badge ─────────────────────────────────────── */
 .chain-badge {
   font-size: 10px;

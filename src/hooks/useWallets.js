@@ -36,13 +36,15 @@ function allAddrKeys(wallet) {
 
 function aggregateTokens(addrTokens, keys) {
   const map = new Map()
-  for (const key of keys) {
-    const tokens = addrTokens[key]
+  for (const addrKey of keys) {
+    const chain = addrKey.split(':')[0]
+    const tokens = addrTokens[addrKey]
     if (!tokens) continue
     for (const t of tokens) {
-      const existing = map.get(t.key)
+      const mapKey = `${chain}:${t.key}`
+      const existing = map.get(mapKey)
       if (!existing) {
-        map.set(t.key, { ...t })
+        map.set(mapKey, { ...t, chain })
       } else {
         existing.balance += t.balance
         // metadata from first entry is kept

@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import Card from './Card'
 import Button from './Button'
 import { useCI } from '@hooks/useCI'
 import { tokenUsd } from '@/utils/tokenUsd'
+import { getPriceHistory } from '@/services/priceHistory'
 
 const TOKEN_PRICE_KEYS = { eth: 'ethereum', btc: 'bitcoin', sol: 'solana', ltc: 'litecoin', doge: 'dogecoin', trx: 'tron' }
 const STABLECOINS = new Set(['usdt', 'usdc'])
@@ -19,14 +20,15 @@ function formatDate(dateStr) {
   return `${day}.${month}`
 }
 
-function calcUsd(balances, prices, volatileOnly = false) {
+// pricesForDate: { bitcoin: 85000, ethereum: 3200, ... } (historical or current fallback)
+function calcUsd(balances, pricesForDate, volatileOnly = false) {
   let total = 0
   for (const [key, amount] of Object.entries(balances)) {
     if (STABLECOINS.has(key)) {
       if (!volatileOnly) total += amount
     } else {
       const priceKey = TOKEN_PRICE_KEYS[key]
-      if (priceKey) total += amount * (prices[priceKey]?.usd ?? 0)
+      if (priceKey) total += amount * (pricesForDate[priceKey] ?? 0)
     }
   }
   return total
@@ -35,7 +37,12 @@ function calcUsd(balances, prices, volatileOnly = false) {
 export function HistoryChart({ history, wallets, prices }) {
   const [selected, setSelected] = useState('total')
   const [volatileOnly, setVolatileOnly] = useState(false)
+  const [priceHistory, setPriceHistory] = useState(null)
   const { colors } = useCI()
+
+  useEffect(() => {
+    getPriceHistory().then(setPriceHistory).catch(() => {})
+  }, [])
 
   const loadedWallets = wallets.filter((w) => w.status === 'ok')
 
@@ -43,21 +50,31 @@ export function HistoryChart({ history, wallets, prices }) {
     if (!prices || history.length === 0) return []
     const loaded = wallets.filter((w) => w.status === 'ok')
     return history.map((snap) => {
+      // Build a price lookup for this date using historical data, fall back to current price
+      const pricesForDate = {}
+      for (const [coin, dailyMap] of Object.entries(priceHistory ?? {})) {
+        pricesForDate[coin] = dailyMap[snap.date] ?? prices[coin]?.usd ?? 0
+      }
+      // Coins not in priceHistory yet: fall back to current prices
+      for (const [coin, data] of Object.entries(prices ?? {})) {
+        if (!(coin in pricesForDate)) pricesForDate[coin] = data.usd ?? 0
+      }
+
       const point = { date: formatDate(snap.date) }
       if (selected === 'total') {
         let total = 0
         for (const wallet of loaded) {
           const wb = snap.balances[wallet.id]
-          if (wb) total += calcUsd(wb, prices, volatileOnly)
+          if (wb) total += calcUsd(wb, pricesForDate, volatileOnly)
         }
         point.value = Math.round(total * 100) / 100
       } else {
         const wb = snap.balances[selected]
-        point.value = wb ? Math.round(calcUsd(wb, prices, volatileOnly) * 100) / 100 : 0
+        point.value = wb ? Math.round(calcUsd(wb, pricesForDate, volatileOnly) * 100) / 100 : 0
       }
       return point
     })
-  }, [history, prices, selected, volatileOnly, wallets])
+  }, [history, prices, priceHistory, selected, volatileOnly, wallets])
 
   if (history.length < 2 || !prices) return (
     <Card>

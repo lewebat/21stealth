@@ -15,65 +15,57 @@ const MAX_ADDRESSES = 10
 export function AddWalletForm({ isOpen, onClose, onAdd }) {
   const [label, setLabel] = useState('')
   const [firstAddr, setFirstAddr] = useState('')
-  const [sameChainAddrs, setSameChainAddrs] = useState([])
-  const [extraEntries, setExtraEntries] = useState([])
-  const [newSameAddr, setNewSameAddr] = useState('')
-  const [newSameError, setNewSameError] = useState('')
-  const [newChainAddr, setNewChainAddr] = useState('')
-  const [newChainError, setNewChainError] = useState('')
+  const [extraAddresses, setExtraAddresses] = useState([])
+  const [newAddr, setNewAddr] = useState('')
+  const [newAddrError, setNewAddrError] = useState('')
 
-  const firstAddrTrimmed = firstAddr.trim()
-  const detectedChain = detectChain(firstAddrTrimmed)
-  const firstEntryAddrs = detectedChain ? [firstAddrTrimmed, ...sameChainAddrs] : []
-  const allEntries = detectedChain
-    ? [{ chain: detectedChain, addresses: firstEntryAddrs }, ...extraEntries]
-    : extraEntries
-  const usedChains = new Set(allEntries.map(e => e.chain))
-  const atMaxSameChain = firstEntryAddrs.length >= MAX_ADDRESSES
+  const firstTrimmed = firstAddr.trim()
+  const firstChain = detectChain(firstTrimmed)
+  const allAddedAddrs = firstChain ? [firstTrimmed, ...extraAddresses] : []
+
+  // Group all addresses by chain, preserving insertion order
+  function buildEntries(extra = extraAddresses) {
+    if (!firstChain) return []
+    const map = new Map()
+    map.set(firstChain, [firstTrimmed])
+    for (const addr of extra) {
+      const chain = detectChain(addr)
+      if (!chain) continue
+      if (!map.has(chain)) map.set(chain, [])
+      map.get(chain).push(addr)
+    }
+    return [...map.entries()].map(([chain, addresses]) => ({ chain, addresses }))
+  }
+
+  const allEntries = buildEntries()
 
   function reset() {
-    setLabel(''); setFirstAddr(''); setSameChainAddrs([]); setExtraEntries([])
-    setNewSameAddr(''); setNewSameError(''); setNewChainAddr(''); setNewChainError('')
+    setLabel(''); setFirstAddr(''); setExtraAddresses([])
+    setNewAddr(''); setNewAddrError('')
   }
 
   function handleClose() { reset(); onClose() }
 
-  function handleAddSameChain() {
-    const trimmed = newSameAddr.trim()
+  function handleAddAddr() {
+    const trimmed = newAddr.trim()
     if (!trimmed) return
-    if (firstEntryAddrs.includes(trimmed)) { setNewSameError('Address already added'); return }
-    const detected = detectChain(trimmed)
-    if (!detected || detected !== detectedChain) {
-      setNewSameError(`Invalid address or wrong chain (expected: ${detectedChain?.toUpperCase()})`)
+    const chain = detectChain(trimmed)
+    if (!chain) { setNewAddrError('Unknown address'); return }
+    if (allAddedAddrs.includes(trimmed)) { setNewAddrError('Address already added'); return }
+    const chainCount = allAddedAddrs.filter(a => detectChain(a) === chain).length
+    if (chainCount >= MAX_ADDRESSES) {
+      setNewAddrError(`Max ${MAX_ADDRESSES} addresses reached for ${chain.toUpperCase()}`)
       return
     }
-    setSameChainAddrs(prev => [...prev, trimmed])
-    setNewSameAddr('')
-    setNewSameError('')
-  }
-
-  function handleAddChain() {
-    const trimmed = newChainAddr.trim()
-    if (!trimmed) return
-    const detected = detectChain(trimmed)
-    if (!detected) { setNewChainError('Unknown address'); return }
-    if (usedChains.has(detected)) {
-      setNewChainError(`${CHAIN_LABELS[detected] ?? detected} already exists — add more addresses to the existing entry`)
-      return
-    }
-    setExtraEntries(prev => [...prev, { chain: detected, addresses: [trimmed] }])
-    setNewChainAddr('')
-    setNewChainError('')
-  }
-
-  function handleRemoveChainEntry(chain) {
-    setExtraEntries(prev => prev.filter(e => e.chain !== chain))
+    setExtraAddresses(prev => [...prev, trimmed])
+    setNewAddr('')
+    setNewAddrError('')
   }
 
   function handleSubmit(e) {
     e.preventDefault()
-    if (!firstAddrTrimmed || !detectedChain) return
-    onAdd(label.trim() || CHAIN_LABELS[detectedChain] || 'Wallet', allEntries)
+    if (!firstTrimmed || !firstChain) return
+    onAdd(label.trim() || CHAIN_LABELS[firstChain] || 'Wallet', allEntries)
     reset()
     onClose()
   }
@@ -98,81 +90,61 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
               label="Wallet address — chain auto-detected"
               type="text"
               value={firstAddr}
-              onChange={e => { setFirstAddr(e.target.value); setSameChainAddrs([]); setNewSameError('') }}
+              onChange={e => { setFirstAddr(e.target.value); setExtraAddresses([]); setNewAddrError('') }}
               required
               className="font-mono"
               iconRight={
                 firstAddr.length > 0 ? (
-                  detectedChain
-                    ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[detectedChain]}</span>
+                  firstChain
+                    ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[firstChain]}</span>
                     : <span className="text-danger text-xs font-semibold">Unknown</span>
                 ) : null
               }
             />
 
-            {detectedChain && (sameChainAddrs.length > 0 || !atMaxSameChain) && (
-              <div>
-                <div className="form-label mb-2">Extra {detectedChain.toUpperCase()} addresses (optional)</div>
-                <div className="stack stack-sm">
-                  {sameChainAddrs.map(addr => (
-                    <div key={addr} className="flex items-center gap-2">
-                      <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
-                      <button type="button" onClick={() => setSameChainAddrs(p => p.filter(a => a !== addr))} className="btn-icon text-danger">✕</button>
+            {/* Added addresses grouped by chain */}
+            {firstChain && extraAddresses.length > 0 && (
+              <div className="stack stack-sm">
+                {allEntries.map(({ chain, addresses }) => (
+                  <div key={chain}>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
+                      <span className="text-caption text-text-muted">{CHAIN_LABELS[chain]}</span>
                     </div>
-                  ))}
-                  {!atMaxSameChain ? (
-                    <div>
-                      <div className="flex gap-2">
-                        <FloatInput
-                          label={`Additional ${detectedChain.toUpperCase()} address`}
-                          type="text"
-                          value={newSameAddr}
-                          onChange={e => { setNewSameAddr(e.target.value); setNewSameError('') }}
-                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddSameChain() } }}
-                          className="font-mono flex-1"
-                        />
-                        <Button type="button" variant="secondary" onClick={handleAddSameChain}>+</Button>
-                      </div>
-                      {newSameError && <p className="form-error mt-1">{newSameError}</p>}
+                    <div className="stack stack-xs">
+                      {addresses.map((addr, i) => (
+                        <div key={addr} className="flex items-center gap-2">
+                          <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
+                          {!(chain === firstChain && i === 0) && (
+                            <button
+                              type="button"
+                              onClick={() => setExtraAddresses(prev => prev.filter(a => a !== addr))}
+                              className="btn-icon text-danger"
+                            >✕</button>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  ) : (
-                    <p className="text-caption text-text-muted">Maximum of {MAX_ADDRESSES} addresses reached</p>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
 
-            {detectedChain && extraEntries.length > 0 && (
-              <div>
-                <div className="form-label mb-2">Additional chains</div>
-                <div className="stack stack-sm">
-                  {extraEntries.map(({ chain, addresses }) => (
-                    <div key={chain} className="chain-entry-header">
-                      <div className="flex items-center gap-2">
-                        <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
-                        <span className="font-mono text-caption text-text-muted truncate">{addresses[0]}</span>
-                      </div>
-                      <button type="button" onClick={() => handleRemoveChainEntry(chain)} className="btn-icon text-danger">✕</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {detectedChain && (
+            {/* Unified add address input — routes automatically by auto-detect */}
+            {firstChain && (
               <div>
                 <div className="flex gap-2">
                   <FloatInput
-                    label="Add another chain — address auto-detected"
+                    label="Add another address or chain"
                     type="text"
-                    value={newChainAddr}
-                    onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
-                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChain() } }}
+                    value={newAddr}
+                    onChange={e => { setNewAddr(e.target.value); setNewAddrError('') }}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddr() } }}
                     className="font-mono flex-1"
                   />
-                  <Button type="button" variant="secondary" onClick={handleAddChain}>+</Button>
+                  <Button type="button" variant="secondary" onClick={handleAddAddr}>+</Button>
                 </div>
-                {newChainError && <p className="form-error mt-1">{newChainError}</p>}
+                {newAddrError && <p className="form-error mt-1">{newAddrError}</p>}
               </div>
             )}
 
@@ -180,8 +152,8 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" type="button" onClick={handleClose}>Cancel</Button>
-          <Button type="submit" variant="primary" disabled={!detectedChain}>
-            {detectedChain
+          <Button type="submit" variant="primary" disabled={!firstChain}>
+            {firstChain
               ? `Add wallet (${allEntries.length} chain${allEntries.length > 1 ? 's' : ''})`
               : 'Add wallet'}
           </Button>

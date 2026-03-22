@@ -77,30 +77,27 @@ export function HistoryChart({ history, wallets, prices }) {
 
   return (
     <Card>
-      <Card.Body>
-        {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <div className="h2">{formatUsd(currentValue)}</div>
-            <div className={`text-caption font-mono mt-0.5 ${totalDelta >= 0 ? 'text-success' : 'text-danger'}`}>
-              {totalDelta >= 0 ? '+' : ''}{formatUsd(totalDelta)}
-              <span className="ml-1 text-xs">
-                ({totalDeltaPct >= 0 ? '+' : ''}{totalDeltaPct.toFixed(2)}%)
-              </span>
-              <span className="text-text-subtle ml-1 font-sans">since {history[0].date}</span>
-            </div>
+      <Card.Header>
+        <div>
+          <div className="h2">{formatUsd(currentValue)}</div>
+          <div className={`text-caption font-mono mt-0.5 ${totalDelta >= 0 ? 'text-success' : 'text-danger'}`}>
+            {totalDelta >= 0 ? '+' : ''}{formatUsd(totalDelta)}
+            <span className="ml-1 text-xs">
+              ({totalDeltaPct >= 0 ? '+' : ''}{totalDeltaPct.toFixed(2)}%)
+            </span>
+            <span className="text-text-subtle ml-1 font-sans">since {history[0].date}</span>
           </div>
-          <Button
-            variant={volatileOnly ? 'accent' : 'ghost'}
-            size="sm"
-            onClick={() => setVolatileOnly((v) => !v)}
-          >
-            {volatileOnly ? 'Include stablecoins' : 'Exclude stablecoins'}
-          </Button>
         </div>
-
-        {/* Chart */}
-        <div className="h-40 -mx-1 min-w-0">
+        <Button
+          variant={volatileOnly ? 'accent' : 'ghost'}
+          size="sm"
+          onClick={() => setVolatileOnly((v) => !v)}
+        >
+          {volatileOnly ? 'Include stablecoins' : 'Exclude stablecoins'}
+        </Button>
+      </Card.Header>
+      <Card.Body>
+        <div className="h-40 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <defs>
@@ -121,9 +118,7 @@ export function HistoryChart({ history, wallets, prices }) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-
-        {/* Wallet switcher */}
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 pt-4">
           <button
             onClick={() => setSelected('total')}
             className={selected === 'total' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}

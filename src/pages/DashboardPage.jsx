@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
-import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal, PriceTicker, Card } from '@ui'
+import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, ConfigActions, EditWalletModal, PriceTicker, Card, Button } from '@ui'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { Container, Grid } from '@layout'
 
@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [prices, setPrices] = useState(null)
   const [editingWalletId, setEditingWalletId] = useState(null)
   const [hideSmall, setHideSmall] = useState(false)
+  const [addingWallet, setAddingWallet] = useState(false)
   const editingWallet = editingWalletId ? wallets.find(w => w.id === editingWalletId) ?? null : null
   const intervalRef = useRef(null)
 
@@ -65,9 +66,7 @@ export default function DashboardPage() {
                   <div className="text-display">🔒</div>
                   <p className="h4">No wallets yet</p>
                   <p className="text-body text-text-muted">Add a wallet address or import your config.</p>
-                  <div className="w-full max-w-sm">
-                    <AddWalletForm onAdd={addWallet} />
-                  </div>
+                  <Button variant="primary" onClick={() => setAddingWallet(true)}>+ Add wallet</Button>
                 </div>
               </Card.Body>
             </Card>
@@ -92,13 +91,18 @@ export default function DashboardPage() {
 
           <div className="flex items-center justify-between">
             <h2 className="h4">Wallets</h2>
-            <button
-              type="button"
-              onClick={() => setHideSmall(v => !v)}
-              className={`btn btn-sm ${hideSmall ? 'btn-primary' : 'btn-secondary'}`}
-            >
-              {hideSmall ? 'Show all' : 'Hide small values'}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setHideSmall(v => !v)}
+                className={`btn btn-sm ${hideSmall ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                {hideSmall ? 'Show all' : 'Hide small values'}
+              </button>
+              <Button variant="primary" size="sm" onClick={() => setAddingWallet(true)}>
+                + Add wallet
+              </Button>
+            </div>
           </div>
 
           <Grid gap="md" className="items-stretch">
@@ -120,13 +124,14 @@ export default function DashboardPage() {
             ))}
           </Grid>
 
-          <Grid>
-            <Grid.Col span="full">
-              <AddWalletForm onAdd={addWallet} />
-            </Grid.Col>
-          </Grid>
         </>
       )}
+
+      <AddWalletForm
+        isOpen={addingWallet}
+        onClose={() => setAddingWallet(false)}
+        onAdd={(label, entries) => { addWallet(label, entries); setAddingWallet(false) }}
+      />
 
       {editingWallet && (
         <EditWalletModal

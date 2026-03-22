@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Card from './Card'
 import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
 
@@ -65,6 +65,12 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
   }, [wallet.entries, wallet.tokens, wallet.addrTokens, wallet.addrStatus, wallet.addrError, prices, hideSmall])
 
   const allHidden = hideSmall && chains.length === 0
+  const [expandedChains, setExpandedChains] = useState(new Set())
+  const toggleExpand = (chain) => setExpandedChains(prev => {
+    const next = new Set(prev)
+    next.has(chain) ? next.delete(chain) : next.add(chain)
+    return next
+  })
 
   return (
     <Card className="h-full flex flex-col">
@@ -100,13 +106,24 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
           <div className="table-wrapper">
             <table className="table table-compact">
               <tbody>
-                {chains.map(({ chain, status, firstError, tokens, addrLabel }) => (
+                {chains.map(({ chain, addresses, status, firstError, tokens, addrLabel }) => (
                   <>
                     <tr key={`${chain}-header`} className="chain-header-row">
                       <td colSpan={3} className="pb-0 pt-0">
                         <div className="flex items-center gap-2">
                           <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
                           <span className="text-caption font-mono text-text-subtle truncate">{addrLabel}</span>
+                          {addresses.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => toggleExpand(chain)}
+                              className="btn-icon text-text-subtle hover:text-text"
+                              style={{ padding: '0.1rem', fontSize: '10px' }}
+                              title={expandedChains.has(chain) ? 'Hide addresses' : 'Show addresses'}
+                            >
+                              {expandedChains.has(chain) ? '▲' : '▼'}
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -120,12 +137,12 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                         <td colSpan={3}><div className="form-error">{firstError ?? 'Error'}</div></td>
                       </tr>
                     )}
-                    {status === 'ok' && tokens.length === 0 && (
+                    {status === 'ok' && !expandedChains.has(chain) && tokens.length === 0 && (
                       <tr key={`${chain}-empty`}>
                         <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
                       </tr>
                     )}
-                    {status === 'ok' && tokens.map(token => {
+                    {status === 'ok' && !expandedChains.has(chain) && tokens.map(token => {
                       const delta = getDelta(wallet.id, token.key, token.balance)
                       const positive = delta !== null && delta > 0
                       return (
@@ -145,6 +162,35 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                             <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
                           </td>
                         </tr>
+                      )
+                    })}
+                    {status === 'ok' && expandedChains.has(chain) && addresses.map(addr => {
+                      const addrTokensRaw = tokensWithUsd(wallet.addrTokens[`${chain}:${addr}`] ?? [], prices)
+                        .filter(t => !hideSmall || t.usd >= 1)
+                        .sort((a, b) => b.usd - a.usd)
+                      return (
+                        <>
+                          <tr key={`${chain}-${addr}-header`} className="chain-header-row">
+                            <td colSpan={3} className="pb-0 pt-0">
+                              <span className="text-caption font-mono text-text-subtle">{shorten(addr)}</span>
+                            </td>
+                          </tr>
+                          {addrTokensRaw.length === 0 ? (
+                            <tr key={`${chain}-${addr}-empty`}>
+                              <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
+                            </tr>
+                          ) : addrTokensRaw.map(token => (
+                            <tr key={`${chain}-${addr}-${token.key}`}>
+                              <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
+                              <td>
+                                <div className="text-right font-mono text-caption">{fmt4(token.balance)}</div>
+                              </td>
+                              <td>
+                                <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
+                              </td>
+                            </tr>
+                          ))}
+                        </>
                       )
                     })}
                   </>

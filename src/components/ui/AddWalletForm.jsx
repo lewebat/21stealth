@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { detectChain } from '@utils/detectChain'
 import { FormGroup, Input } from './Form'
 import Button from './Button'
-import Card from './Card'
+import { Modal } from './Modal'
 
 const CHAIN_LABELS = { eth: 'Ethereum', btc: 'Bitcoin', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron' }
 const CHAIN_BADGE = {
@@ -12,16 +12,15 @@ const CHAIN_BADGE = {
 }
 const MAX_ADDRESSES = 10
 
-export function AddWalletForm({ onAdd }) {
+export function AddWalletForm({ isOpen, onClose, onAdd }) {
   const [label, setLabel] = useState('')
   const [firstAddr, setFirstAddr] = useState('')
-  const [sameChainAddrs, setSameChainAddrs] = useState([])  // extra addrs same chain as firstAddr
-  const [extraEntries, setExtraEntries] = useState([])       // [{chain, addresses}] additional chains
+  const [sameChainAddrs, setSameChainAddrs] = useState([])
+  const [extraEntries, setExtraEntries] = useState([])
   const [newSameAddr, setNewSameAddr] = useState('')
   const [newSameError, setNewSameError] = useState('')
   const [newChainAddr, setNewChainAddr] = useState('')
   const [newChainError, setNewChainError] = useState('')
-  const [open, setOpen] = useState(false)
 
   const firstAddrTrimmed = firstAddr.trim()
   const detectedChain = detectChain(firstAddrTrimmed)
@@ -32,13 +31,20 @@ export function AddWalletForm({ onAdd }) {
   const usedChains = new Set(allEntries.map(e => e.chain))
   const atMaxSameChain = firstEntryAddrs.length >= MAX_ADDRESSES
 
+  function reset() {
+    setLabel(''); setFirstAddr(''); setSameChainAddrs([]); setExtraEntries([])
+    setNewSameAddr(''); setNewSameError(''); setNewChainAddr(''); setNewChainError('')
+  }
+
+  function handleClose() { reset(); onClose() }
+
   function handleAddSameChain() {
     const trimmed = newSameAddr.trim()
     if (!trimmed) return
-    if (firstEntryAddrs.includes(trimmed)) { setNewSameError('Adresse bereits vorhanden'); return }
+    if (firstEntryAddrs.includes(trimmed)) { setNewSameError('Address already added'); return }
     const detected = detectChain(trimmed)
     if (!detected || detected !== detectedChain) {
-      setNewSameError(`Ungültige Adresse oder falsche Chain (erwartet: ${detectedChain?.toUpperCase()})`)
+      setNewSameError(`Invalid address or wrong chain (expected: ${detectedChain?.toUpperCase()})`)
       return
     }
     setSameChainAddrs(prev => [...prev, trimmed])
@@ -68,142 +74,123 @@ export function AddWalletForm({ onAdd }) {
     e.preventDefault()
     if (!firstAddrTrimmed || !detectedChain) return
     onAdd(label.trim() || CHAIN_LABELS[detectedChain] || 'Wallet', allEntries)
-    setLabel(''); setFirstAddr(''); setSameChainAddrs([]); setExtraEntries([])
-    setNewSameAddr(''); setNewSameError(''); setNewChainAddr(''); setNewChainError('')
-    setOpen(false)
-  }
-
-  function handleClose() {
-    setOpen(false)
-    setLabel(''); setFirstAddr(''); setSameChainAddrs([]); setExtraEntries([])
-    setNewSameAddr(''); setNewSameError(''); setNewChainAddr(''); setNewChainError('')
-  }
-
-  if (!open) {
-    return (
-      <button type="button" onClick={() => setOpen(true)} className="btn-secondary btn-full" style={{ borderStyle: 'dashed' }}>
-        + Add wallet
-      </button>
-    )
+    reset()
+    onClose()
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Card>
-        <Card.Header>
-          <span className="h5">Add wallet</span>
-          <button type="button" className="btn-link text-text-muted" onClick={handleClose}>Cancel</button>
-        </Card.Header>
-        <Card.Body className="stack stack-md">
+    <Modal isOpen={isOpen} onClose={handleClose} title="Add wallet" size="sm">
+      <form onSubmit={handleSubmit}>
+        <Modal.Body>
+          <div className="stack stack-md">
 
-          <FormGroup label="Label (optional)" htmlFor="wallet-label">
-            <Input
-              id="wallet-label"
-              type="text"
-              placeholder="e.g. Trust Wallet"
-              value={label}
-              onChange={e => setLabel(e.target.value)}
-            />
-          </FormGroup>
+            <FormGroup label="Label (optional)" htmlFor="wallet-label">
+              <Input
+                id="wallet-label"
+                type="text"
+                placeholder="e.g. Trust Wallet"
+                value={label}
+                onChange={e => setLabel(e.target.value)}
+                autoFocus
+              />
+            </FormGroup>
 
-          <FormGroup label="Wallet address" htmlFor="wallet-address" required>
-            <Input
-              id="wallet-address"
-              type="text"
-              placeholder="Enter address — chain auto-detected"
-              value={firstAddr}
-              onChange={e => { setFirstAddr(e.target.value); setSameChainAddrs([]); setNewSameError('') }}
-              required
-              className="font-mono"
-              iconRight={
-                firstAddr.length > 0 ? (
-                  detectedChain
-                    ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[detectedChain]}</span>
-                    : <span className="text-danger text-xs font-semibold">Unknown</span>
-                ) : null
-              }
-            />
-          </FormGroup>
+            <FormGroup label="Wallet address" htmlFor="wallet-address">
+              <Input
+                id="wallet-address"
+                type="text"
+                placeholder="Enter address — chain auto-detected"
+                value={firstAddr}
+                onChange={e => { setFirstAddr(e.target.value); setSameChainAddrs([]); setNewSameError('') }}
+                required
+                className="font-mono"
+                iconRight={
+                  firstAddr.length > 0 ? (
+                    detectedChain
+                      ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[detectedChain]}</span>
+                      : <span className="text-danger text-xs font-semibold">Unknown</span>
+                  ) : null
+                }
+              />
+            </FormGroup>
 
-          {/* Extra addresses for same chain */}
-          {detectedChain && (sameChainAddrs.length > 0 || !atMaxSameChain) && (
-            <div>
-              <div className="form-label mb-2">Extra {detectedChain.toUpperCase()} addresses (optional)</div>
-              <div className="stack stack-sm">
-                {sameChainAddrs.map(addr => (
-                  <div key={addr} className="flex items-center gap-2">
-                    <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
-                    <button type="button" onClick={() => setSameChainAddrs(p => p.filter(a => a !== addr))} className="btn-icon text-danger">✕</button>
-                  </div>
-                ))}
-                {!atMaxSameChain ? (
-                  <div>
-                    <div className="flex gap-2">
-                      <Input
-                        type="text"
-                        placeholder={`Additional ${detectedChain.toUpperCase()} address…`}
-                        value={newSameAddr}
-                        onChange={e => { setNewSameAddr(e.target.value); setNewSameError('') }}
-                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddSameChain() } }}
-                        className="font-mono flex-1"
-                      />
-                      <Button type="button" variant="secondary" onClick={handleAddSameChain}>+</Button>
+            {detectedChain && (sameChainAddrs.length > 0 || !atMaxSameChain) && (
+              <div>
+                <div className="form-label mb-2">Extra {detectedChain.toUpperCase()} addresses (optional)</div>
+                <div className="stack stack-sm">
+                  {sameChainAddrs.map(addr => (
+                    <div key={addr} className="flex items-center gap-2">
+                      <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
+                      <button type="button" onClick={() => setSameChainAddrs(p => p.filter(a => a !== addr))} className="btn-icon text-danger">✕</button>
                     </div>
-                    {newSameError && <p className="form-error mt-1">{newSameError}</p>}
-                  </div>
-                ) : (
-                  <p className="text-caption text-text-muted">Maximum of 10 addresses reached</p>
-                )}
+                  ))}
+                  {!atMaxSameChain ? (
+                    <div>
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder={`Additional ${detectedChain.toUpperCase()} address…`}
+                          value={newSameAddr}
+                          onChange={e => { setNewSameAddr(e.target.value); setNewSameError('') }}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddSameChain() } }}
+                          className="font-mono flex-1"
+                        />
+                        <Button type="button" variant="secondary" onClick={handleAddSameChain}>+</Button>
+                      </div>
+                      {newSameError && <p className="form-error mt-1">{newSameError}</p>}
+                    </div>
+                  ) : (
+                    <p className="text-caption text-text-muted">Maximum of {MAX_ADDRESSES} addresses reached</p>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Additional chain entries */}
-          {detectedChain && extraEntries.length > 0 && (
-            <div>
-              <div className="form-label mb-2">Weitere Chains</div>
-              <div className="stack stack-sm">
-                {extraEntries.map(({ chain, addresses }) => (
-                  <div key={chain} className="flex items-center gap-2 p-2 rounded border border-border bg-surface">
-                    <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>
-                      {chain.toUpperCase()}
-                    </span>
-                    <span className="flex-1 font-mono text-caption text-text-muted truncate">{addresses[0]}</span>
-                    <button type="button" onClick={() => handleRemoveChainEntry(chain)} className="btn-icon text-danger">✕</button>
-                  </div>
-                ))}
+            {detectedChain && extraEntries.length > 0 && (
+              <div>
+                <div className="form-label mb-2">Additional chains</div>
+                <div className="stack stack-sm">
+                  {extraEntries.map(({ chain, addresses }) => (
+                    <div key={chain} className="flex items-center gap-2 p-2 rounded border border-border bg-surface">
+                      <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
+                      <span className="flex-1 font-mono text-caption text-text-muted truncate">{addresses[0]}</span>
+                      <button type="button" onClick={() => handleRemoveChainEntry(chain)} className="btn-icon text-danger">✕</button>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Add another chain */}
-          {detectedChain && (
-            <div>
-              <div className="form-label mb-2">Weitere Chain hinzufügen (optional)</div>
-              <div className="flex gap-2">
-                <Input
-                  type="text"
-                  placeholder="Adresse eingeben — Chain wird erkannt…"
-                  value={newChainAddr}
-                  onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChain() } }}
-                  className="font-mono flex-1"
-                />
-                <Button type="button" variant="secondary" onClick={handleAddChain}>+</Button>
+            {detectedChain && (
+              <div>
+                <div className="form-label mb-2">Add another chain (optional)</div>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Enter address — chain auto-detected"
+                    value={newChainAddr}
+                    onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChain() } }}
+                    className="font-mono flex-1"
+                  />
+                  <Button type="button" variant="secondary" onClick={handleAddChain}>+</Button>
+                </div>
+                {newChainError && <p className="form-error mt-1">{newChainError}</p>}
+                <p className="text-caption text-text-muted mt-1">Supports ETH, BTC, SOL, LTC, DOGE, TRX</p>
               </div>
-              {newChainError && <p className="form-error mt-1">{newChainError}</p>}
-              <p className="text-caption text-text-muted mt-1">Unterstützt ETH, BTC, SOL, LTC, DOGE, TRX</p>
-            </div>
-          )}
+            )}
 
-          <Button type="submit" variant="primary" fullWidth disabled={!detectedChain}>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" type="button" onClick={handleClose}>Cancel</Button>
+          <Button type="submit" variant="primary" disabled={!detectedChain}>
             {detectedChain
-              ? `Add wallet (${allEntries.length} Chain${allEntries.length > 1 ? 's' : ''})`
+              ? `Add wallet (${allEntries.length} chain${allEntries.length > 1 ? 's' : ''})`
               : 'Add wallet'}
           </Button>
-
-        </Card.Body>
-      </Card>
-    </form>
+        </Modal.Footer>
+      </form>
+    </Modal>
   )
 }

@@ -28,7 +28,7 @@
   color: var(--color-text-subtle);
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
-  background-color: var(--color-surface);
+  background-color: transparent;
 }
 
 .table th.text-right,

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table'
 import Card from './Card'
 import { tokenUsd } from '@/utils/tokenUsd'
@@ -16,9 +16,24 @@ const TOKEN_COLORS = {
   usdc: { text: 'text-info',     bar: 'bg-info' },
 }
 
-const fmt = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmt8 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 8 })
+
+function TokenCell({ row }) {
+  const colors = TOKEN_COLORS[row.original.key] ?? { text: 'text-text-muted' }
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`text-xs font-bold w-10 ${colors.text}`}>{row.original.key.toUpperCase()}</span>
+      <span className="text-caption text-text-muted">{row.original.label}</span>
+      {row.original.chain && (
+        <span className="chain-badge bg-surface-elevated text-text-subtle border border-border">{row.original.chain.toUpperCase()}</span>
+      )}
+    </div>
+  )
+}
 
 export function PortfolioSummary({ wallets, getDelta, prices }) {
+  const [tab, setTab] = useState('value')
   const loadedWallets = wallets.filter((w) => w.status === 'ok')
 
   const { data, totalUsd } = useMemo(() => {
@@ -32,6 +47,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
         const existing = map.get(mapKey)
         if (existing) {
           existing.usd += usd
+          existing.balance += token.balance
           if (delta !== null)
             existing.deltaUsd = (existing.deltaUsd ?? 0) + delta * unitPrice
         } else {
@@ -40,6 +56,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
             chain: token.chain,
             label: TOKEN_LABELS[token.key] ?? token.key,
             usd,
+            balance: token.balance,
             deltaUsd: delta !== null ? delta * unitPrice : null,
           })
         }
@@ -50,23 +67,12 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
     return { data: rows, totalUsd: total }
   }, [loadedWallets, getDelta, prices])
 
-  const columns = useMemo(() => [
+  const valueColumns = useMemo(() => [
     {
       id: 'token',
       header: 'Token',
       accessorKey: 'key',
-      cell: ({ row }) => {
-        const colors = TOKEN_COLORS[row.original.key] ?? { text: 'text-text-muted' }
-        return (
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-bold w-10 ${colors.text}`}>{row.original.key.toUpperCase()}</span>
-            <span className="text-caption text-text-muted">{row.original.label}</span>
-            {row.original.chain && (
-              <span className="chain-badge bg-surface-elevated text-text-subtle border border-border">{row.original.chain.toUpperCase()}</span>
-            )}
-          </div>
-        )
-      },
+      cell: ({ row }) => <TokenCell row={row} />,
     },
     {
       id: 'usd',
@@ -76,10 +82,10 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
         const positive = row.original.deltaUsd !== null && row.original.deltaUsd > 0
         return (
           <div className="text-right">
-            <span className="font-semibold">${fmt(getValue())}</span>
+            <span className="font-semibold">${fmt2(getValue())}</span>
             {row.original.deltaUsd !== null && Math.abs(row.original.deltaUsd) >= 0.01 && (
               <span className={`text-caption font-mono ml-1.5 ${positive ? 'text-success' : 'text-danger'}`}>
-                {positive ? '+' : ''}${fmt(row.original.deltaUsd)}
+                {positive ? '+' : ''}${fmt2(row.original.deltaUsd)}
               </span>
             )}
           </div>
@@ -106,6 +112,26 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
     },
   ], [totalUsd])
 
+  const holdingsColumns = useMemo(() => [
+    {
+      id: 'token',
+      header: 'Token',
+      accessorKey: 'key',
+      cell: ({ row }) => <TokenCell row={row} />,
+    },
+    {
+      id: 'balance',
+      header: () => <span className="block text-right">Balance</span>,
+      accessorKey: 'balance',
+      cell: ({ getValue, row }) => (
+        <div className="text-right font-mono text-caption">
+          {fmt8(getValue())} <span className="text-text-subtle">{row.original.key.toUpperCase()}</span>
+        </div>
+      ),
+    },
+  ], [])
+
+  const columns = tab === 'value' ? valueColumns : holdingsColumns
   const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel(), getSortedRowModel: getSortedRowModel(), autoResetPageIndex: false })
 
   if (data.length === 0) return null
@@ -114,34 +140,50 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
     <Card className="h-full">
       <Card.Header>
         <span className="h5">Breakdown</span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setTab('value')}
+            className={`btn-icon text-[10px] ${tab === 'value' ? 'text-text' : 'text-text-subtle hover:text-text'}`}
+          >
+            VALUE
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab('holdings')}
+            className={`btn-icon text-[10px] ${tab === 'holdings' ? 'text-text' : 'text-text-subtle hover:text-text'}`}
+          >
+            HOLDINGS
+          </button>
+        </div>
       </Card.Header>
       <Card.Body>
-      <div className="table-wrapper">
-        <table className="table table-compact">
-          <thead>
-            {table.getHeaderGroups().map((hg) => (
-              <tr key={hg.id}>
-                {hg.headers.map((header) => (
-                  <th key={header.id}>
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </th>
-                ))}
-              </tr>
-            ))}
-          </thead>
-          <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+        <div className="table-wrapper">
+          <table className="table table-compact">
+            <thead>
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((header) => (
+                    <th key={header.id}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </Card.Body>
     </Card>
   )

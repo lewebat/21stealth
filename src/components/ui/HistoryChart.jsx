@@ -44,11 +44,11 @@ export function HistoryChart({ history, wallets, prices }) {
     getPriceHistory().then(setPriceHistory).catch(() => {})
   }, [])
 
-  const loadedWallets = wallets.filter((w) => w.status === 'ok')
+  const loadedWallets = wallets.filter((w) => w.tokens.length > 0)
 
   const chartData = useMemo(() => {
     if (!prices || history.length === 0) return []
-    const loaded = wallets.filter((w) => w.status === 'ok')
+    const loaded = wallets.filter((w) => w.tokens.length > 0)
     return history.map((snap) => {
       // Build a price lookup for this date using historical data, fall back to current price
       const pricesForDate = {}

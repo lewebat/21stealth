@@ -38,7 +38,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
 
   const { data, totalUsd } = useMemo(() => {
     const map = new Map()
-    for (const wallet of wallets.filter((w) => w.status === 'ok')) {
+    for (const wallet of wallets.filter((w) => w.tokens.length > 0)) {
       for (const token of wallet.tokens) {
         const usd = tokenUsd(token, prices)
         const unitPrice = token.balance > 0 ? usd / token.balance : 0

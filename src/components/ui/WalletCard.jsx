@@ -31,7 +31,7 @@ function aggregateTokens(addresses, chain, addrTokens) {
   return [...map.values()]
 }
 
-export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, prices, hideSmall }) {
+export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, prices, hideSmall, fullAddresses }) {
   const totalUsd = wallet.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0)
   const allKeys = wallet.entries.flatMap(e => e.addresses.map(a => `${e.chain}:${a}`))
   const isPartialError = wallet.status === 'error' &&
@@ -56,10 +56,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
         const tokens = tokensWithUsd(rawTokens, prices)
           .filter(t => !hideSmall || t.usd >= 1)
           .sort((a, b) => b.usd - a.usd)
-        const addrLabel = addresses.length === 1
-          ? shorten(addresses[0])
-          : `${addresses.length} addresses`
-        return { chain, addresses, status, firstError, tokens, addrLabel }
+        return { chain, addresses, status, firstError, tokens }
       })
       .filter(c => !hideSmall || c.status !== 'ok' || c.tokens.length > 0)
   }, [wallet.entries, wallet.tokens, wallet.addrTokens, wallet.addrStatus, wallet.addrError, prices, hideSmall])
@@ -106,7 +103,11 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
           <div className="table-wrapper">
             <table className="table table-compact">
               <tbody>
-                {chains.map(({ chain, addresses, status, firstError, tokens, addrLabel }) => (
+                {chains.map(({ chain, addresses, status, firstError, tokens }) => {
+                  const addrLabel = addresses.length === 1
+                    ? (fullAddresses ? addresses[0] : shorten(addresses[0]))
+                    : `${addresses.length} addresses`
+                  return (
                   <>
                     <tr key={`${chain}-header`} className="chain-header-row">
                       <td colSpan={3} className="pb-0 pt-0">
@@ -172,7 +173,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                         <>
                           <tr key={`${chain}-${addr}-header`} className="chain-header-row">
                             <td colSpan={3} className="pb-0 pt-0">
-                              <span className="text-caption font-mono text-text-subtle">{shorten(addr)}</span>
+                              <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
                             </td>
                           </tr>
                           {addrTokensRaw.length === 0 ? (
@@ -194,7 +195,8 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                       )
                     })}
                   </>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>

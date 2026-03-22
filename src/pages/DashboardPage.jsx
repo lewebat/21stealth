@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [prices, setPrices] = useState(null)
   const [editingWalletId, setEditingWalletId] = useState(null)
   const [hideSmall, setHideSmall] = useState(false)
+  const [fullAddresses, setFullAddresses] = useState(false)
   const [addingWallet, setAddingWallet] = useState(false)
   const editingWallet = editingWalletId ? wallets.find(w => w.id === editingWalletId) ?? null : null
   const intervalRef = useRef(null)
@@ -99,6 +100,13 @@ export default function DashboardPage() {
               >
                 {hideSmall ? 'Show all' : 'Hide small values'}
               </button>
+              <button
+                type="button"
+                onClick={() => setFullAddresses(v => !v)}
+                className={`btn btn-sm ${fullAddresses ? 'btn-primary' : 'btn-secondary'}`}
+              >
+                {fullAddresses ? 'Shorten addresses' : 'Show full addresses'}
+              </button>
               <Button variant="primary" size="sm" onClick={() => setAddingWallet(true)}>
                 + Add wallet
               </Button>
@@ -119,6 +127,7 @@ export default function DashboardPage() {
                   onEdit={() => setEditingWalletId(wallet.id)}
                   getDelta={getDelta}
                   hideSmall={hideSmall}
+                  fullAddresses={fullAddresses}
                 />
               </Grid.Col>
             ))}

@@ -136,25 +136,25 @@
 
 /* ── Price ticker ────────────────────────────────────── */
 .ticker-wrapper {
-  background-color: var(--color-sidebar-bg);
+  background-color: var(--color-surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
 .ticker-symbol {
-  color: var(--color-sidebar-text);
+  color: var(--color-text-muted);
   font-size: 0.75rem;
   font-weight: 700;
 }
 
 .ticker-price {
-  color: var(--color-sidebar-text);
+  color: var(--color-text-muted);
   font-size: 0.75rem;
   font-family: var(--font-mono);
 }
 
 .ticker-skeleton {
-  background-color: var(--color-sidebar-border);
+  background-color: var(--color-border);
 }
 
 @keyframes ticker-scroll {

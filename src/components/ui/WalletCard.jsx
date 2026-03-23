@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Pencil, RefreshCw, X, Info, ChevronUp, ChevronDown } from 'lucide-react'
 import Card from './Card'
 import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
@@ -109,7 +109,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                     ? (fullAddresses ? addresses[0] : shorten(addresses[0]))
                     : `${addresses.length} addresses`
                   return (
-                  <>
+                  <Fragment key={chain}>
                     <tr key={`${chain}-header`} className="chain-header-row">
                       <td colSpan={3} className="pb-0 pt-0">
                         <div className="flex items-center gap-2">
@@ -170,7 +170,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                         .filter(t => !hideSmall || t.usd >= 1)
                         .sort((a, b) => b.usd - a.usd)
                       return (
-                        <>
+                        <Fragment key={`${chain}-${addr}`}>
                           <tr key={`${chain}-${addr}-header`} className="chain-header-row">
                             <td colSpan={3} className="pb-0 pt-0">
                               <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
@@ -191,10 +191,10 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                               </td>
                             </tr>
                           ))}
-                        </>
+                        </Fragment>
                       )
                     })}
-                  </>
+                  </Fragment>
                   )
                 })}
               </tbody>

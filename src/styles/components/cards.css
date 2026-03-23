@@ -137,8 +137,32 @@
 /* ── Price ticker ────────────────────────────────────── */
 .ticker-wrapper {
   background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
+  position: relative;
+}
+
+.ticker-wrapper::before,
+.ticker-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ticker-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, var(--color-surface), transparent);
+}
+
+.ticker-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, var(--color-surface), transparent);
 }
 
 .ticker-symbol {

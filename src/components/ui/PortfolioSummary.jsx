@@ -42,7 +42,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
       for (const token of wallet.tokens) {
         const usd = tokenUsd(token, prices)
         const unitPrice = token.balance > 0 ? usd / token.balance : 0
-        const delta = getDelta(wallet.id, token.key, token.balance)
+        const delta = getDelta(wallet.id, `${token.chain}:${token.key}`, token.balance)
         const mapKey = `${token.chain}:${token.key}`
         const existing = map.get(mapKey)
         if (existing) {

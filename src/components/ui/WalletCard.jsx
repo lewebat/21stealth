@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Pencil, RefreshCw, X, Info, ChevronUp, ChevronDown } from 'lucide-react'
 import Card from './Card'
 import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
 
@@ -85,18 +86,18 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
           <span className="text-body font-semibold truncate">{wallet.label}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <button type="button" onClick={onEdit} title="Edit" className="btn-icon text-text-muted hover:text-text">✎</button>
+          <button type="button" onClick={onEdit} title="Edit" className="btn-icon text-text-muted hover:text-text"><Pencil size={14} /></button>
           <button type="button" onClick={onRefresh} disabled={wallet.status === 'loading'} title="Refresh" className="btn-icon text-text-muted hover:text-text disabled:opacity-40">
-            {wallet.status === 'loading' ? '…' : '↻'}
+            <RefreshCw size={14} />
           </button>
-          <button type="button" onClick={onRemove} title="Remove" className="btn-icon text-text-subtle hover:text-danger">✕</button>
+          <button type="button" onClick={onRemove} title="Remove" className="btn-icon text-text-subtle hover:text-danger"><X size={14} /></button>
         </div>
       </Card.Header>
 
       <Card.Body>
         {allHidden ? (
           <div className="text-caption text-text-subtle py-2 flex items-center gap-1.5">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            <Info size={13} />
             All values below $1
           </div>
         ) : (
@@ -121,7 +122,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                               className="btn-icon btn-icon-xs text-text-subtle hover:text-text"
                               title={expandedChains.has(chain) ? 'Hide addresses' : 'Show addresses'}
                             >
-                              {expandedChains.has(chain) ? '▲' : '▼'}
+                              {expandedChains.has(chain) ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
                             </button>
                           )}
                         </div>
@@ -143,7 +144,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                       </tr>
                     )}
                     {status === 'ok' && !expandedChains.has(chain) && tokens.map(token => {
-                      const delta = getDelta(wallet.id, token.key, token.balance)
+                      const delta = getDelta(wallet.id, `${chain}:${token.key}`, token.balance)
                       const positive = delta !== null && delta > 0
                       return (
                         <tr key={`${chain}-${token.key}`}>

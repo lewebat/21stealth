@@ -20,7 +20,7 @@ export function useHistory(initialHistory = []) {
       for (const wallet of loaded) {
         balances[wallet.id] = {}
         for (const token of wallet.tokens) {
-          balances[wallet.id][token.key] = token.balance
+          balances[wallet.id][`${token.chain}:${token.key}`] = token.balance
         }
       }
 
@@ -46,9 +46,13 @@ export function useHistory(initialHistory = []) {
     return filtered.length > 0 ? filtered[filtered.length - 1] : null
   }, [history])
 
-  const getDelta = useCallback((walletId, tokenKey, currentBalance) => {
+  const getDelta = useCallback((walletId, chainTokenKey, currentBalance) => {
     if (!previousSnapshot) return null
-    const prev = previousSnapshot.balances[walletId]?.[tokenKey]
+    const wb = previousSnapshot.balances[walletId]
+    if (!wb) return null
+    // Try new chain:key format first, fall back to legacy key-only format
+    const [chain, tokenKey] = chainTokenKey.includes(':') ? chainTokenKey.split(':') : [null, chainTokenKey]
+    const prev = wb[chainTokenKey] ?? (chain ? undefined : wb[tokenKey])
     if (prev === undefined) return null
     const delta = currentBalance - prev
     if (Math.abs(delta) < 0.000001) return null

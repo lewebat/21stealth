@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "exportedAt": "2026-03-22T21:57:34.050Z",
+  "exportedAt": "2026-03-22T22:06:57.992Z",
   "wallets": [
     {
       "id": "wallet-test-1",
@@ -28,12 +28,6 @@
           "chain": "sol",
           "addresses": [
             "So11111111111111111111111111111111111111112"
-          ]
-        },
-        {
-          "chain": "doge",
-          "addresses": [
-            "DFundmtrigMDLTxyzBTiDfzFJLNaHScdsM1234567"
           ]
         }
       ]

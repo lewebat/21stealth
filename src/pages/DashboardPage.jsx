@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Lock } from 'lucide-react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
@@ -64,7 +65,7 @@ export default function DashboardPage() {
             <Card>
               <Card.Body className="card-body-auto">
                 <div className="flex flex-col items-center py-24 gap-4 text-center">
-                  <div className="text-display">🔒</div>
+                  <Lock size={40} className="text-text-subtle" />
                   <p className="h4">No wallets yet</p>
                   <p className="text-body text-text-muted">Add a wallet address or import your config.</p>
                   <Button variant="primary" onClick={() => setAddingWallet(true)}>+ Add wallet</Button>

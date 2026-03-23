@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { X } from 'lucide-react'
 
 /**
  * Modal — wraps .modal-* CSS classes.
@@ -23,7 +24,7 @@ export function Modal({ isOpen, onClose, title, size = 'md', children }) {
         <div className="modal-header">
           {title && <h2 className="h4">{title}</h2>}
           <button className="modal-close" onClick={onClose} aria-label="Close">
-            ✕
+            <X size={16} />
           </button>
         </div>
         {children}
@@ -60,7 +61,7 @@ export function Drawer({ isOpen, onClose, title, children }) {
         <div className="modal-header">
           {title && <h2 className="h4">{title}</h2>}
           <button className="modal-close" onClick={onClose} aria-label="Close">
-            ✕
+            <X size={16} />
           </button>
         </div>
         <div className="modal-body">{children}</div>

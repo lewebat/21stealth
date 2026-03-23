@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { X } from 'lucide-react'
 import { detectChain } from '@utils/detectChain'
 import { FloatInput } from './Form'
 import Button from './Button'
@@ -120,7 +121,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
                               type="button"
                               onClick={() => setExtraAddresses(prev => prev.filter(a => a !== addr))}
                               className="btn-icon text-danger"
-                            >✕</button>
+                            ><X size={14} /></button>
                           )}
                         </div>
                       ))}

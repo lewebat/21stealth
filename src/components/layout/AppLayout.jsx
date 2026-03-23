@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
+import { LayoutGrid, Moon, Sun } from 'lucide-react'
 import useUIStore from '@store/useUIStore'
 
 
@@ -6,11 +7,7 @@ const navItems = [
   {
     to: '/dashboard',
     label: 'Dashboard',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-      </svg>
-    ),
+    icon: <LayoutGrid size={18} />,
   },
 ]
 
@@ -44,7 +41,7 @@ export default function AppLayout() {
             aria-label="Toggle theme"
             title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
           >
-            {theme === 'light' ? '🌙' : '☀️'}
+            {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
           </button>
         </header>
         <main className="flex-1">

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { X } from 'lucide-react'
 import { Modal } from './Modal'
 import { FloatInput } from './Form'
 import Button from './Button'
@@ -111,7 +112,7 @@ export function WalletModal({ isOpen, onClose, wallet, onSave }) {
                       disabled={addresses.length <= 1 && entries.length <= 1}
                       className="btn-icon text-danger disabled:opacity-30"
                       title="Remove"
-                    >✕</button>
+                    ><X size={14} /></button>
                   </div>
                 ))}
               </div>

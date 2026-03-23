@@ -9,6 +9,7 @@ import { getPriceHistory } from '@/services/priceHistory'
 
 const TOKEN_PRICE_KEYS = { eth: 'ethereum', btc: 'bitcoin', sol: 'solana', ltc: 'litecoin', doge: 'dogecoin', trx: 'tron' }
 const STABLECOINS = new Set(['usdt', 'usdc'])
+const BACKFILL_DAYS = 14
 
 function formatUsd(value) {
   if (value >= 1_000_000) return '$' + (value / 1_000_000).toFixed(2) + 'M'
@@ -21,10 +22,11 @@ function formatDate(dateStr) {
   return `${day}.${month}`
 }
 
-// pricesForDate: { bitcoin: 85000, ethereum: 3200, ... } (historical or current fallback)
+// Handles both legacy flat keys ('usdt') and new chain:key format ('trx:usdt')
 function calcUsd(balances, pricesForDate, volatileOnly = false) {
   let total = 0
-  for (const [key, amount] of Object.entries(balances)) {
+  for (const [rawKey, amount] of Object.entries(balances)) {
+    const key = rawKey.includes(':') ? rawKey.split(':')[1] : rawKey
     if (STABLECOINS.has(key)) {
       if (!volatileOnly) total += amount
     } else {
@@ -33,6 +35,17 @@ function calcUsd(balances, pricesForDate, volatileOnly = false) {
     }
   }
   return total
+}
+
+function buildPricesForDate(dateStr, priceHistory, prices) {
+  const pricesForDate = {}
+  for (const [coin, dailyMap] of Object.entries(priceHistory ?? {})) {
+    pricesForDate[coin] = dailyMap[dateStr] ?? prices?.[coin]?.usd ?? 0
+  }
+  for (const [coin, data] of Object.entries(prices ?? {})) {
+    if (!(coin in pricesForDate)) pricesForDate[coin] = data.usd ?? 0
+  }
+  return pricesForDate
 }
 
 export function HistoryChart({ history, wallets, prices }) {
@@ -47,20 +60,12 @@ export function HistoryChart({ history, wallets, prices }) {
 
   const loadedWallets = wallets.filter((w) => w.tokens.length > 0)
 
+  // Real snapshot data points
   const chartData = useMemo(() => {
     if (!prices || history.length === 0) return []
     const loaded = wallets.filter((w) => w.tokens.length > 0)
     return history.map((snap) => {
-      // Build a price lookup for this date using historical data, fall back to current price
-      const pricesForDate = {}
-      for (const [coin, dailyMap] of Object.entries(priceHistory ?? {})) {
-        pricesForDate[coin] = dailyMap[snap.date] ?? prices[coin]?.usd ?? 0
-      }
-      // Coins not in priceHistory yet: fall back to current prices
-      for (const [coin, data] of Object.entries(prices ?? {})) {
-        if (!(coin in pricesForDate)) pricesForDate[coin] = data.usd ?? 0
-      }
-
+      const pricesForDate = buildPricesForDate(snap.date, priceHistory, prices)
       const point = { date: formatDate(snap.date) }
       if (selected === 'total') {
         let total = 0
@@ -77,18 +82,66 @@ export function HistoryChart({ history, wallets, prices }) {
     })
   }, [history, prices, priceHistory, selected, volatileOnly, wallets])
 
-  if (history.length < 2 || !prices) return (
+  // Synthetic backfill: 14 days before first snapshot using historical prices
+  const syntheticData = useMemo(() => {
+    if (!priceHistory || history.length === 0 || !prices) return []
+    const firstSnap = history[0]
+    const firstDate = new Date(firstSnap.date + 'T00:00:00')
+    const points = []
+
+    for (let i = BACKFILL_DAYS; i >= 1; i--) {
+      const d = new Date(firstDate)
+      d.setDate(d.getDate() - i)
+      const dateStr = d.toISOString().split('T')[0]
+
+      const pricesForDate = buildPricesForDate(dateStr, priceHistory, prices)
+      // Skip days where we have no historical price data at all
+      const hasData = Object.entries(pricesForDate).some(([coin, v]) => v > 0 && TOKEN_PRICE_KEYS[coin] !== undefined || v > 0)
+      if (!hasData) continue
+
+      const point = { date: formatDate(dateStr), synthetic: true }
+      if (selected === 'total') {
+        let total = 0
+        for (const wallet of loadedWallets) {
+          const wb = firstSnap.balances[wallet.id]
+          if (wb) total += calcUsd(wb, pricesForDate, volatileOnly)
+        }
+        point.value = Math.round(total * 100) / 100
+      } else {
+        const wb = firstSnap.balances[selected]
+        point.value = wb ? Math.round(calcUsd(wb, pricesForDate, volatileOnly) * 100) / 100 : 0
+      }
+      points.push(point)
+    }
+    return points
+  }, [priceHistory, history, prices, selected, volatileOnly, loadedWallets])
+
+  const allChartData = [...syntheticData, ...chartData]
+
+  if (history.length === 0 || !prices) return (
     <Card>
       <Card.Body className="card-body-auto">
         <div className="flex items-center gap-3 py-6 text-text-subtle">
           <Info size={16} />
-          <span className="text-caption">Portfolio history will appear here once balance changes have been recorded on at least two different days.</span>
+          <span className="text-caption">Portfolio history will appear here once your first wallet has loaded.</span>
         </div>
       </Card.Body>
     </Card>
   )
 
-  const values = chartData.map((d) => d.value)
+  // Wait for priceHistory before rendering synthetic chart
+  if (allChartData.length < 2) return (
+    <Card>
+      <Card.Body className="card-body-auto">
+        <div className="flex items-center gap-3 py-6 text-text-subtle">
+          <Info size={16} />
+          <span className="text-caption">Loading price history…</span>
+        </div>
+      </Card.Body>
+    </Card>
+  )
+
+  const values = allChartData.map((d) => d.value)
   const min = Math.min(...values)
   const max = Math.max(...values)
   const isPositive = values[values.length - 1] >= values[0]
@@ -99,9 +152,10 @@ export function HistoryChart({ history, wallets, prices }) {
     ? loadedWallets.reduce((s, w) => s + w.tokens.reduce((t, tk) => volatileOnly && STABLECOINS.has(tk.key) ? t : t + tokenUsd(tk, prices), 0), 0)
     : (selectedWallet?.tokens.reduce((t, tk) => volatileOnly && STABLECOINS.has(tk.key) ? t : t + tokenUsd(tk, prices), 0) ?? 0)
 
-  const firstValue = chartData[0]?.value ?? 0
+  const firstValue = allChartData[0]?.value ?? 0
   const totalDelta = currentValue - firstValue
   const totalDeltaPct = firstValue > 0 ? (totalDelta / firstValue) * 100 : 0
+  const sinceLabel = syntheticData.length > 0 ? `~${BACKFILL_DAYS}d ago` : history[0].date
 
   return (
     <Card>
@@ -113,7 +167,7 @@ export function HistoryChart({ history, wallets, prices }) {
             <span className="ml-1 text-xs">
               ({totalDeltaPct >= 0 ? '+' : ''}{totalDeltaPct.toFixed(2)}%)
             </span>
-            <span className="text-text-subtle ml-1 font-sans">since {history[0].date}</span>
+            <span className="text-text-subtle ml-1 font-sans">since {sinceLabel}</span>
           </div>
         </div>
         <Button
@@ -127,7 +181,7 @@ export function HistoryChart({ history, wallets, prices }) {
       <Card.Body className="card-body-auto">
         <div className="h-40 min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <AreaChart data={allChartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={color} stopOpacity={0.25} />

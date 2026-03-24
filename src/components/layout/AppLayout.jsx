@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutGrid, Moon, Sun } from 'lucide-react'
 import useUIStore from '@store/useUIStore'
+import { InstallBanner } from '@ui/InstallBanner'
 
 
 const navItems = [
@@ -33,6 +34,7 @@ export default function AppLayout() {
       </aside>
 
       <div className="main-content">
+        <InstallBanner />
         <header className="app-header">
           <div className="flex-1" />
           <button

@@ -5,7 +5,7 @@ const useUIStore = create(
   persist(
     (set) => ({
       sidebarOpen: true,
-      theme: 'light', // 'light' | 'dark'
+      theme: 'dark', // 'light' | 'dark'
       toasts: [],
 
       toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),

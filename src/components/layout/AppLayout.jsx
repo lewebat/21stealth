@@ -1,16 +1,7 @@
-import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutGrid, Moon, Sun } from 'lucide-react'
+import { Outlet } from 'react-router-dom'
+import { Moon, Sun } from 'lucide-react'
 import useUIStore from '@store/useUIStore'
 import { InstallBanner } from '@ui/InstallBanner'
-
-
-const navItems = [
-  {
-    to: '/dashboard',
-    label: 'Dashboard',
-    icon: <LayoutGrid size={18} />,
-  },
-]
 
 export default function AppLayout() {
   const theme       = useUIStore((s) => s.theme)
@@ -18,21 +9,6 @@ export default function AppLayout() {
 
   return (
     <div className="page-wrapper">
-      <aside className="app-sidebar">
-        <nav className="flex flex-col gap-1 flex-1 items-center justify-center">
-          {navItems.map(({ to, label, icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              data-tooltip={label}
-              className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
-            >
-              {icon}
-            </NavLink>
-          ))}
-        </nav>
-      </aside>
-
       <div className="main-content">
         <InstallBanner />
         <header className="app-header">

@@ -110,3 +110,22 @@
   padding: 0.1rem;
   font-size: 10px;
 }
+
+/* ── Tab button ─────────────────────────────────────── */
+.btn-tab {
+  @apply btn btn-ghost;
+  padding: 0.25rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  border-radius: var(--radius-sm);
+}
+.btn-tab:hover:not(:disabled) {
+  color: var(--color-text);
+  background-color: transparent;
+}
+.btn-tab.active {
+  color: var(--color-text);
+}

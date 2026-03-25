@@ -53,5 +53,8 @@ export default {
       },
     },
   },
+  corePlugins: {
+    container: false,
+  },
   plugins: [],
 }

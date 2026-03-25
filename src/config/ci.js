@@ -50,7 +50,7 @@ const ci = {
     'container-sm': '640px',
     'container-md': '768px',
     'container-lg': '1024px',
-    'container-xl': '1280px',
+    'container-xl': '1200px',
     'container-2xl': '1536px',
     'sidebar-width': '260px',
   },

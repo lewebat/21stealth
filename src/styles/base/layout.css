@@ -45,17 +45,15 @@
 .page-wrapper {
   display: flex;
   min-height: 100vh;
-  position: relative;
 }
-
 
 .main-content {
   flex: 1;
   min-width: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
+
 
 .app-header {
   display: flex;

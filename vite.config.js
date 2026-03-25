@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo-21stealth.png', 'logo-21stealth-dark.png'],
+      includeAssets: ['icon-*.png'],
       manifest: {
         name: '21stealth',
         short_name: '21stealth',
@@ -20,17 +20,14 @@ export default defineConfig({
         scope: '/',
         start_url: '/dashboard',
         icons: [
-          {
-            src: 'logo-21stealth-dark.png',
-            sizes: '2500x2500',
-            type: 'image/png',
-          },
-          {
-            src: 'logo-21stealth-dark.png',
-            sizes: '2500x2500',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
+          { src: 'icon-96.png',  sizes: '96x96',   type: 'image/png' },
+          { src: 'icon-144.png', sizes: '144x144',  type: 'image/png' },
+          { src: 'icon-152.png', sizes: '152x152',  type: 'image/png' },
+          { src: 'icon-167.png', sizes: '167x167',  type: 'image/png' },
+          { src: 'icon-180.png', sizes: '180x180',  type: 'image/png' },
+          { src: 'icon-192.png', sizes: '192x192',  type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512',  type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512',  type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

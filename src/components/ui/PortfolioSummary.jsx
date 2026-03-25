@@ -144,16 +144,16 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
           <button
             type="button"
             onClick={() => setTab('value')}
-            className={`btn-icon text-[10px] ${tab === 'value' ? 'text-text' : 'text-text-subtle hover:text-text'}`}
+            className={`btn-tab${tab === 'value' ? ' active' : ''}`}
           >
-            VALUE
+            Value
           </button>
           <button
             type="button"
             onClick={() => setTab('holdings')}
-            className={`btn-icon text-[10px] ${tab === 'holdings' ? 'text-text' : 'text-text-subtle hover:text-text'}`}
+            className={`btn-tab${tab === 'holdings' ? ' active' : ''}`}
           >
-            HOLDINGS
+            Holdings
           </button>
         </div>
       </Card.Header>

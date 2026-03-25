@@ -200,11 +200,11 @@ export function HistoryChart({ history, wallets, prices }) {
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex flex-wrap gap-2 pt-4">
+        <div className="flex flex-wrap gap-1 pt-4 justify-center">
           <button
             type="button"
             onClick={() => setSelected('total')}
-            className={selected === 'total' ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+            className={`btn-tab${selected === 'total' ? ' active' : ''}`}
           >
             Total
           </button>
@@ -213,7 +213,7 @@ export function HistoryChart({ history, wallets, prices }) {
               type="button"
               key={wallet.id}
               onClick={() => setSelected(wallet.id)}
-              className={selected === wallet.id ? 'btn-primary btn-sm' : 'btn-secondary btn-sm'}
+              className={`btn-tab${selected === wallet.id ? ' active' : ''}`}
             >
               {wallet.label}
             </button>

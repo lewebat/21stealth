@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Lock } from 'lucide-react'
+import { Lock, SlidersHorizontal } from 'lucide-react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
@@ -14,6 +14,8 @@ export default function DashboardPage() {
   const [editingWalletId, setEditingWalletId] = useState(null)
   const [hideSmall, setHideSmall] = useState(false)
   const [fullAddresses, setFullAddresses] = useState(false)
+  const [filterOpen, setFilterOpen] = useState(false)
+  const filterRef = useRef(null)
   const [addingWallet, setAddingWallet] = useState(false)
   const editingWallet = editingWalletId ? wallets.find(w => w.id === editingWalletId) ?? null : null
   const intervalRef = useRef(null)
@@ -37,6 +39,14 @@ export default function DashboardPage() {
     const anyLoaded  = wallets.some(w => w.status === 'ok')
     if (!anyLoading && anyLoaded) saveSnapshot(wallets)
   }, [wallets, saveSnapshot])
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   function handleRefreshAll() {
     invalidatePrices()
@@ -91,28 +101,38 @@ export default function DashboardPage() {
             </Grid.Col>
           </Grid>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <h2 className="h4">Wallets</h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={hideSmall ? 'primary' : 'secondary'}
-                size="xs"
-                onClick={() => setHideSmall(v => !v)}
-              >
-                {hideSmall ? 'Show all' : 'Hide small values'}
+            <div className="flex items-stretch gap-2 relative" ref={filterRef}>
+              <Button variant="secondary" size="sm" onClick={() => setFilterOpen(v => !v)} aria-label="Filter" className="leading-none">
+                <SlidersHorizontal size={14} />
               </Button>
-              <Button
-                variant={fullAddresses ? 'primary' : 'secondary'}
-                size="xs"
-                onClick={() => setFullAddresses(v => !v)}
-              >
-                {fullAddresses ? 'Shorten addresses' : 'Show full addresses'}
-              </Button>
+              {filterOpen && (
+                  <div className="absolute right-0 top-full mt-1 z-10 card py-1 min-w-[180px]">
+                    <button
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-caption hover:bg-surface-raised flex items-center justify-between gap-4"
+                      onClick={() => setHideSmall(v => !v)}
+                    >
+                      <span className="text-text">Hide small values</span>
+                      {hideSmall && <span className="text-primary text-xs">✓</span>}
+                    </button>
+                    <button
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-caption hover:bg-surface-raised flex items-center justify-between gap-4"
+                      onClick={() => setFullAddresses(v => !v)}
+                    >
+                      <span className="text-text">Show full addresses</span>
+                      {fullAddresses && <span className="text-primary text-xs">✓</span>}
+                    </button>
+                  </div>
+                )}
               <Button variant="primary" size="sm" onClick={() => setAddingWallet(true)}>
                 + Add wallet
               </Button>
             </div>
           </div>
+
 
           <Grid gap="md" className="items-stretch">
             {[...wallets].sort((a, b) =>

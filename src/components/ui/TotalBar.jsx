@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { PieChart, Pie, Cell, Sector, ResponsiveContainer } from 'recharts'
 import Card from './Card'
 import Button from './Button'
@@ -33,6 +33,34 @@ function VariableSlice({ cx, cy, innerRadius, startAngle, endAngle, fill, percen
       endAngle={endAngle}
       fill={fill}
     />
+  )
+}
+
+function ColoredDots({ segments, total }) {
+  const [tooltip, setTooltip] = useState(null)
+  return (
+    <div className="flex items-center justify-center gap-2.5 w-full relative">
+      {segments.map((seg) => {
+        const pct = total > 0 ? (seg.usd / total) * 100 : 0
+        return (
+          <div
+            key={seg.mapKey}
+            className="relative"
+            onMouseEnter={() => setTooltip(seg.mapKey)}
+            onMouseLeave={() => setTooltip(null)}
+            onTouchStart={() => setTooltip(v => v === seg.mapKey ? null : seg.mapKey)}
+          >
+            <div className="w-2.5 h-2.5 rounded-full cursor-default" style={{ backgroundColor: seg.color }} />
+            {tooltip === seg.mapKey && (
+              <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 card px-2 py-1 whitespace-nowrap z-10">
+                <span className="font-bold text-xs" style={{ color: seg.color }}>{seg.label}</span>
+                <span className="text-text-muted text-xs ml-1">{pct.toFixed(0)}%</span>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -117,20 +145,8 @@ export function TotalBar({ wallets, prices }) {
               </div>
             </div>
 
-            {/* Legende – Marquee */}
-            <div className="overflow-hidden w-full">
-              <div className="ticker-track flex w-max gap-5">
-                {[...segments, ...segments].map((seg, i) => {
-                  const pct = total > 0 ? (seg.usd / total) * 100 : 0
-                  return (
-                    <div key={i} className="flex items-baseline gap-1 shrink-0">
-                      <span className="font-bold leading-none" style={{ color: seg.color, fontSize: '0.78rem' }}>{seg.label}</span>
-                      <span className="text-text-muted leading-none" style={{ fontSize: '0.65rem' }}>{pct.toFixed(0)}%</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
+            {/* Legende – Colored Dots */}
+            <ColoredDots segments={segments} total={total} />
           </div>
         )}
       </Card.Body>

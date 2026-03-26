@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, RefreshCw } from 'lucide-react'
 import { exportConfig, importConfig, NeedsPasswordError, saveToHandle } from '@/services/walletConfig'
 import Button from './Button'
 import { FormGroup, Input } from './Form'
@@ -7,7 +7,7 @@ import { Modal } from './Modal'
 
 const supportsFileAccess = typeof window.showSaveFilePicker === 'function'
 
-export function ConfigActions({ wallets, history, onImport }) {
+export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
   const fileInputRef = useRef(null)
   const [modal, setModal] = useState(null) // { type: 'export' } | { type: 'import', file } | { type: 'save' }
   const [password, setPassword] = useState('')
@@ -142,6 +142,9 @@ export function ConfigActions({ wallets, history, onImport }) {
   return (
     <>
       <div className="cluster cluster-sm">
+        <Button variant="secondary" size="sm" onClick={onRefreshAll} aria-label="Refresh all">
+          <RefreshCw size={14} />
+        </Button>
         <Button variant="secondary" size="sm" onClick={handleImport}>
           Import
         </Button>

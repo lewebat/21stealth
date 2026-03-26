@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { RefreshCw } from 'lucide-react'
 import { PieChart, Pie, Cell, Sector, ResponsiveContainer } from 'recharts'
 import Card from './Card'
 import Button from './Button'
@@ -44,7 +43,7 @@ const fmtShort = (n) => {
   return fmtFull(n)
 }
 
-export function TotalBar({ wallets, prices, onRefreshAll }) {
+export function TotalBar({ wallets, prices }) {
   const { segments, total } = useMemo(() => {
     const map = new Map()
     for (const wallet of wallets) {
@@ -78,10 +77,8 @@ export function TotalBar({ wallets, prices, onRefreshAll }) {
   return (
     <Card className="h-full flex flex-col">
       <Card.Header>
-        <span className="h5">Total Portfolio</span>
-        <Button variant="ghost" size="xs" onClick={onRefreshAll} aria-label="Refresh all">
-          <RefreshCw size={14} />
-        </Button>
+        <span className="h5">Balance</span>
+        <span className="btn-secondary btn-sm font-mono pointer-events-none">{fmtFull(total)}</span>
       </Card.Header>
       <Card.Body className="card-body-auto flex-1 flex items-center justify-center">
         {segments.length === 0 ? (

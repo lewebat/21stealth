@@ -64,6 +64,7 @@ export default function DashboardPage() {
           wallets={wallets}
           history={history}
           onImport={(ws, hist) => { importWallets(ws); if (hist) loadHistory(hist) }}
+          onRefreshAll={handleRefreshAll}
         />
       </div>
 
@@ -88,7 +89,7 @@ export default function DashboardPage() {
         <>
           <Grid gap="md" className="items-stretch">
             <Grid.Col span="third">
-              <TotalBar wallets={wallets} prices={prices} onRefreshAll={handleRefreshAll} />
+              <TotalBar wallets={wallets} prices={prices} />
             </Grid.Col>
             <Grid.Col span="two-thirds">
               <PortfolioSummary wallets={wallets} prices={prices} getDelta={getDelta} />

@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 
 $xpub = $_GET['xpub'] ?? '';
 
-if (!preg_match('/^[a-zA-Z][a-km-zA-HJ-NP-Z1-9]{107,113}$/', $xpub)) {
+if (!preg_match('/^[LM][a-km-zA-HJ-NP-Z1-9]{107,113}$/', $xpub)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid xPub key']);
     exit;
@@ -20,7 +20,7 @@ $ctx = stream_context_create(['http' => ['timeout' => 15, 'ignore_errors' => tru
 $url = 'https://api.blockchair.com/litecoin/dashboards/xpub/' . urlencode($xpub);
 if (!empty($config['blockchair_api_key'])) $url .= '?key=' . $config['blockchair_api_key'];
 $body = @file_get_contents($url, false, $ctx);
-$data = $body ? json_decode($body, true) : null;
+$data = ($body !== false) ? json_decode($body, true) : null;
 
 if ($data && isset($data['data'][$xpub]['addresses'])) {
     $addrData = $data['data'][$xpub]['addresses'];
@@ -59,3 +59,4 @@ if ($data2 && isset($data2['balance'])) {
 
 http_response_code(502);
 echo json_encode(['error' => 'LTC API unreachable']);
+exit;

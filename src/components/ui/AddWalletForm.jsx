@@ -111,7 +111,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
 
             <FloatInput
               id="wallet-address"
-              label="Address or xPub key — chain auto-detected"
+              label="Address or xPub key"
               type="text"
               value={firstAddr}
               onChange={e => { setFirstAddr(e.target.value); setExtraAddresses([]); setNewAddrError('') }}

@@ -16,8 +16,10 @@ const TOKEN_COLORS = {
   usdc: { text: 'text-info',     bar: 'bg-info' },
 }
 
+const STABLECOINS = new Set(['usdt', 'usdc'])
 const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 const fmt8 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 8 })
+const fmtHoldings = (n, key) => STABLECOINS.has(key) ? fmt2(n) : fmt8(n)
 
 function TokenCell({ row }) {
   const colors = TOKEN_COLORS[row.original.key] ?? { text: 'text-text-muted' }
@@ -125,7 +127,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
       accessorKey: 'balance',
       cell: ({ getValue, row }) => (
         <div className="text-right font-mono text-caption">
-          {fmt8(getValue())} <span className="text-text-subtle">{row.original.key.toUpperCase()}</span>
+          {fmtHoldings(getValue(), row.original.key)} <span className="text-text-subtle">{row.original.key.toUpperCase()}</span>
         </div>
       ),
     },

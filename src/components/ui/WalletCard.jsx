@@ -12,8 +12,10 @@ const CHAIN_BADGE = {
   trx:  'bg-danger text-text-inverted',
 }
 
+const STABLECOINS = new Set(['usdt', 'usdc'])
 const fmt4 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })
 const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const fmtBalance = (n, key) => STABLECOINS.has(key) ? fmt2(n) : fmt4(n)
 const shorten = (addr) => addr.length > 20 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr
 
 function aggregateTokens(addresses, chain, addrTokens) {
@@ -151,10 +153,10 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                           <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
                           <td>
                             <div className="text-right">
-                              <span className="font-mono text-caption">{fmt4(token.balance)}</span>
+                              <span className="font-mono text-caption">{fmtBalance(token.balance, token.key)}</span>
                               {delta !== null && (
                                 <span className={`text-caption font-mono ml-1 ${positive ? 'text-success' : 'text-danger'}`}>
-                                  {positive ? '+' : ''}{fmt4(delta)}
+                                  {positive ? '+' : ''}{fmtBalance(delta, token.key)}
                                 </span>
                               )}
                             </div>
@@ -184,7 +186,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                             <tr key={`${chain}-${addr}-${token.key}`}>
                               <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
                               <td>
-                                <div className="text-right font-mono text-caption">{fmt4(token.balance)}</div>
+                                <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
                               </td>
                               <td>
                                 <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>

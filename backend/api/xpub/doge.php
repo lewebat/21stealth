@@ -4,7 +4,7 @@ header('Access-Control-Allow-Origin: *');
 
 $xpub = $_GET['xpub'] ?? '';
 
-if (!preg_match('/^[d][a-km-zA-HJ-NP-Z1-9]{107,113}$/', $xpub)) {
+if (!preg_match('/^dgub[a-km-zA-HJ-NP-Z1-9]{103,109}$/', $xpub)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid xPub key']);
     exit;
@@ -46,7 +46,7 @@ if ($data && isset($data['data'][$xpub]['addresses'])) {
 // Fallback: BlockCypher
 $url2 = 'https://api.blockcypher.com/v1/doge/main/addrs/' . urlencode($xpub) . '/balance';
 $body2 = @file_get_contents($url2, false, $ctx);
-$data2 = $body2 ? json_decode($body2, true) : null;
+$data2 = ($body2 !== false) ? json_decode($body2, true) : null;
 
 if ($data2 && isset($data2['balance'])) {
     $doge = $data2['balance'] / 1e8;

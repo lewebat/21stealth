@@ -46,7 +46,7 @@ if ($data && isset($data['data'][$xpub]['addresses'])) {
 // Fallback: BlockCypher
 $url2 = 'https://api.blockcypher.com/v1/ltc/main/addrs/' . urlencode($xpub) . '/balance';
 $body2 = @file_get_contents($url2, false, $ctx);
-$data2 = $body2 ? json_decode($body2, true) : null;
+$data2 = ($body2 !== false) ? json_decode($body2, true) : null;
 
 if ($data2 && isset($data2['balance'])) {
     $ltc = $data2['balance'] / 1e8;

@@ -60,7 +60,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
           : entry.addresses
         const statuses = addresses.map(a => wallet.addrStatus[`${chain}:${a}`] ?? 'loading')
         const status = addresses.length === 0
-          ? 'loading'
+          ? (type === 'xpub' ? (wallet.addrStatus[`xpub:${chain}:${xpub}`] ?? 'loading') : 'loading')
           : statuses.some(s => s === 'loading') ? 'loading'
           : statuses.every(s => s === 'error') ? 'error'
           : 'ok'

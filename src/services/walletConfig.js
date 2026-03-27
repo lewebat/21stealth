@@ -34,7 +34,7 @@ async function buildConfigBlob(wallets, history, password) {
   const config = {
     version: '1',
     exportedAt: new Date().toISOString(),
-    wallets: wallets.map(({ addrTokens, addrStatus, addrError, tokens, status, errorMsg, ...w }) => w),
+    wallets: wallets.map(({ addrTokens, addrStatus, addrError, tokens, status, errorMsg, derivedAddrs, ...w }) => w),
     history: history.length > 0 ? history : undefined,
   }
   const json = JSON.stringify(config, null, 2)

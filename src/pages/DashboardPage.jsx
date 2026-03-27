@@ -3,7 +3,7 @@ import { Lock, SlidersHorizontal } from 'lucide-react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
-import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, WalletModal, ConfigActions, PriceTicker, Card, Button } from '@ui'
+import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, EditWalletModal, ConfigActions, PriceTicker, Card, Button } from '@ui'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { Container, Grid } from '@layout'
 
@@ -158,13 +158,21 @@ export default function DashboardPage() {
         </>
       )}
 
-      <WalletModal
-        isOpen={addingWallet || !!editingWallet}
-        wallet={editingWallet}
-        onClose={() => { setAddingWallet(false); setEditingWalletId(null) }}
-        onSave={(id, data) => {
-          if (id) { updateWallet(id, data) } else { addWallet(data.label, data.entries) }
+      <AddWalletForm
+        isOpen={addingWallet}
+        onClose={() => setAddingWallet(false)}
+        onAdd={(label, entries) => {
+          addWallet(label, entries)
           setAddingWallet(false)
+        }}
+      />
+
+      <EditWalletModal
+        isOpen={!!editingWallet}
+        wallet={editingWallet}
+        onClose={() => setEditingWalletId(null)}
+        onSave={(id, data) => {
+          updateWallet(id, data)
           setEditingWalletId(null)
         }}
       />

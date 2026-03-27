@@ -192,7 +192,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
 
           {/* Add new chain entry */}
           <div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full">
               <FloatInput
                 label="Add another chain — address or xPub auto-detected"
                 type="text"
@@ -201,7 +201,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChainEntry() } }}
                 className="font-mono flex-1"
               />
-              <Button type="button" variant="secondary" onClick={handleAddChainEntry}>+</Button>
+              <Button type="button" variant="secondary" onClick={handleAddChainEntry} className="ml-auto">+</Button>
             </div>
             {newChainError && <p className="form-error mt-1">{newChainError}</p>}
             <p className="flex items-center gap-1.5 text-caption text-text-subtle mt-1">

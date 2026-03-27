@@ -2,7 +2,7 @@
 import { ChevronLeft } from 'lucide-react'
 import { Modal } from './Modal'
 import useUIStore from '@store/useUIStore'
-import { getHelpContent, HELP_TOC } from '@/data/helpContent'
+import { getHelpContent, HELP_TOC } from '@/data/helpContent.jsx'
 
 export function HelpModal() {
   const helpOpen    = useUIStore((s) => s.helpOpen)

@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { Moon, Sun } from 'lucide-react'
 import useUIStore from '@store/useUIStore'
 import { InstallBanner } from '@ui/InstallBanner'
+import { NotificationBell } from '@ui'
 
 export default function AppLayout() {
   const theme       = useUIStore((s) => s.theme)
@@ -13,6 +14,7 @@ export default function AppLayout() {
         <InstallBanner />
         <header className="app-header">
           <div className="flex-1" />
+          <NotificationBell />
           <button
             className="btn-icon transition-base"
             onClick={toggleTheme}

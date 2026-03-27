@@ -131,7 +131,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
             {/* Added addresses grouped by chain */}
             {firstChain && extraAddresses.length > 0 && (
               <div className="stack stack-sm">
-                {allEntries.map(({ chain, addresses }) => (
+                {allEntries.filter(e => e.type === 'address').map(({ chain, addresses }) => (
                   <div key={chain}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>

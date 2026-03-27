@@ -10,7 +10,7 @@ export function useStatus() {
   return useQuery({
     queryKey: statusKeys.all,
     queryFn:  async () => {
-      const res = await fetch(`${BASE}/backend/api/status.php`)
+      const res = await fetch(`${BASE}/backend/api/status`)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.json()
     },

@@ -1,0 +1,6 @@
+RewriteEngine On
+
+# Strip .php extension: if the file without .php doesn't exist but with .php does, rewrite
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+)$ $1.php [L]

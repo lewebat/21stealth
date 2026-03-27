@@ -126,7 +126,7 @@ export function useWallets() {
       if (cached) {
         setWallets(prev => prev.map(w => {
           if (w.id !== walletId) return w
-          if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
+          if (!w.entries.some(e => e.type !== 'xpub' && e.chain === chain && e.addresses.includes(address))) return w
           const addrTokens = { ...w.addrTokens, [key]: cached.tokens }
           const addrStatus = { ...w.addrStatus, [key]: 'ok' }
           const addrError = { ...w.addrError }
@@ -139,7 +139,7 @@ export function useWallets() {
 
     setWallets(prev => prev.map(w => {
       if (w.id !== walletId) return w
-      if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
+      if (!w.entries.some(e => e.type !== 'xpub' && e.chain === chain && e.addresses.includes(address))) return w
       return recompute({ ...w, addrStatus: { ...w.addrStatus, [key]: 'loading' } })
     }))
 
@@ -148,7 +148,7 @@ export function useWallets() {
       setCached(chain, address, tokens)
       setWallets(prev => prev.map(w => {
         if (w.id !== walletId) return w
-        if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
+        if (!w.entries.some(e => e.type !== 'xpub' && e.chain === chain && e.addresses.includes(address))) return w
         const addrTokens = { ...w.addrTokens, [key]: tokens }
         const addrStatus = { ...w.addrStatus, [key]: 'ok' }
         const addrError = { ...w.addrError }
@@ -158,7 +158,7 @@ export function useWallets() {
     } catch (err) {
       setWallets(prev => prev.map(w => {
         if (w.id !== walletId) return w
-        if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
+        if (!w.entries.some(e => e.type !== 'xpub' && e.chain === chain && e.addresses.includes(address))) return w
         const addrStatus = { ...w.addrStatus, [key]: 'error' }
         const addrError = { ...w.addrError, [key]: err instanceof Error ? err.message : 'Unknown error' }
         return recompute({ ...w, addrStatus, addrError })

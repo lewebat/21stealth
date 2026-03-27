@@ -110,16 +110,14 @@ export function NotificationBell() {
                     {chain.toUpperCase()}
                   </span>
                   <div className="notification-item__body">
-                    <div className="notification-item__row">
-                      <span className={`notification-item__status notification-item__status--${status}`}>
-                        {status}
-                      </span>
-                      <span className="notification-item__time">
-                        {seenAt[chain] ? timeAgo(seenAt[chain]) : ''}
-                      </span>
-                    </div>
+                    <span className={`notification-item__status notification-item__status--${status}`}>
+                      {status}
+                    </span>
                     {message && (
                       <span className="text-caption">{message}</span>
+                    )}
+                    {seenAt[chain] && (
+                      <span className="notification-item__time">{timeAgo(seenAt[chain])}</span>
                     )}
                   </div>
                   {!read[chain] && (

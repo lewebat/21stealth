@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { X } from 'lucide-react'
-import { detectChain } from '@utils/detectChain'
+import { detectInput } from '@utils/detectInput'
 import { FloatInput } from './Form'
 import Button from './Button'
 import { Modal } from './Modal'
@@ -20,22 +20,39 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
   const [newAddr, setNewAddr] = useState('')
   const [newAddrError, setNewAddrError] = useState('')
 
-  const firstTrimmed = firstAddr.trim()
-  const firstChain = detectChain(firstTrimmed)
-  const allAddedAddrs = firstChain ? [firstTrimmed, ...extraAddresses] : []
+  const firstTrimmed  = firstAddr.trim()
+  const firstDetected = detectInput(firstTrimmed)   // { chain, type } | null
+  const firstChain    = firstDetected?.chain ?? null
+  const firstIsXpub   = firstDetected?.type === 'xpub'
+  const allAddedAddrs = firstChain && !firstIsXpub ? [firstTrimmed, ...extraAddresses] : []
 
   // Group all addresses by chain, preserving insertion order
   function buildEntries(extra = extraAddresses) {
     if (!firstChain) return []
+    if (firstIsXpub) {
+      // xPub entry for first chain, then any address entries for other chains
+      const map = new Map()
+      for (const addr of extra) {
+        const detected = detectInput(addr)
+        if (!detected || detected.type !== 'address') continue
+        if (!map.has(detected.chain)) map.set(detected.chain, [])
+        map.get(detected.chain).push(addr)
+      }
+      return [
+        { chain: firstChain, type: 'xpub', xpub: firstTrimmed },
+        ...[...map.entries()].map(([chain, addresses]) => ({ chain, type: 'address', addresses })),
+      ]
+    }
+    // Original address logic
     const map = new Map()
     map.set(firstChain, [firstTrimmed])
     for (const addr of extra) {
-      const chain = detectChain(addr)
-      if (!chain) continue
-      if (!map.has(chain)) map.set(chain, [])
-      map.get(chain).push(addr)
+      const detected = detectInput(addr)
+      if (!detected || detected.type !== 'address') continue
+      if (!map.has(detected.chain)) map.set(detected.chain, [])
+      map.get(detected.chain).push(addr)
     }
-    return [...map.entries()].map(([chain, addresses]) => ({ chain, addresses }))
+    return [...map.entries()].map(([chain, addresses]) => ({ chain, type: 'address', addresses }))
   }
 
   const allEntries = buildEntries()
@@ -50,12 +67,18 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
   function handleAddAddr() {
     const trimmed = newAddr.trim()
     if (!trimmed) return
-    const chain = detectChain(trimmed)
-    if (!chain) { setNewAddrError('Unknown address'); return }
+    const detected = detectInput(trimmed)
+    if (!detected) { setNewAddrError('Unknown format — please enter a valid address or xPub key'); return }
+    if (detected.type === 'xpub') { setNewAddrError('Only one xPub per chain supported — use a separate wallet'); return }
     if (allAddedAddrs.includes(trimmed)) { setNewAddrError('Address already added'); return }
-    const chainCount = allAddedAddrs.filter(a => detectChain(a) === chain).length
+    // Prevent adding an address for the same chain as an xPub entry
+    if (firstIsXpub && detected.chain === firstChain) {
+      setNewAddrError(`${detected.chain.toUpperCase()} already tracked via xPub`)
+      return
+    }
+    const chainCount = allAddedAddrs.filter(a => detectInput(a)?.chain === detected.chain).length
     if (chainCount >= MAX_ADDRESSES) {
-      setNewAddrError(`Max ${MAX_ADDRESSES} addresses reached for ${chain.toUpperCase()}`)
+      setNewAddrError(`Max ${MAX_ADDRESSES} addresses for ${detected.chain.toUpperCase()}`)
       return
     }
     setExtraAddresses(prev => [...prev, trimmed])
@@ -96,8 +119,10 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
               className="font-mono"
               iconRight={
                 firstAddr.length > 0 ? (
-                  firstChain
-                    ? <span className="text-success text-xs font-semibold">{CHAIN_LABELS[firstChain]}</span>
+                  firstDetected
+                    ? <span className="text-success text-xs font-semibold">
+                        {firstIsXpub ? `${firstChain?.toUpperCase()} xPub` : CHAIN_LABELS[firstChain]}
+                      </span>
                     : <span className="text-danger text-xs font-semibold">Unknown</span>
                 ) : null
               }

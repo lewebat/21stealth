@@ -3,7 +3,7 @@ import { detectChain } from './detectChain'
 const XPUB_PATTERNS = [
   { re: /^(xpub|ypub|zpub)[a-km-zA-HJ-NP-Z1-9]{107,113}$/, chain: 'btc' },
   { re: /^(Ltub|Mtub)[a-km-zA-HJ-NP-Z1-9]{107,113}$/,      chain: 'ltc' },
-  { re: /^dgub[a-km-zA-HJ-NP-Z1-9]{103,109}$/,              chain: 'doge' },
+  { re: /^dgub[a-km-zA-HJ-NP-Z1-9]{107,113}$/,              chain: 'doge' },
 ]
 
 /**

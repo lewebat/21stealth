@@ -205,11 +205,11 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
               <Button type="button" variant="secondary" onClick={handleAddChainEntry} className="ml-auto">+</Button>
             </div>
             {newChainError && <p className="form-error mt-1">{newChainError}</p>}
-            <p className="flex items-center gap-1.5 text-caption text-text-subtle mt-1">
+            <div className="flex items-center gap-1.5 text-caption text-text-subtle mt-1">
               <Info size={12} className="shrink-0" />
               Enter a wallet address or xPub key. Supported: BTC, ETH, SOL, LTC, DOGE, TRX — chain is detected automatically.{' '}
               <HelpLink articleKey="xpub-explained">What is an xPub?</HelpLink>
-            </p>
+            </div>
           </div>
 
         </div>

@@ -5,7 +5,7 @@ header('Access-Control-Allow-Origin: *');
 $xpub = $_GET['xpub'] ?? '';
 
 // Validate: base58 chars, reasonable length for an xpub key
-if (!preg_match('/^[xyzYZ][a-km-zA-HJ-NP-Z1-9]{100,120}$/', $xpub)) {
+if (!preg_match('/^[xyzYZ][a-km-zA-HJ-NP-Z1-9]{107,113}$/', $xpub)) {
     http_response_code(400);
     echo json_encode(['error' => 'Invalid xPub key']);
     exit;
@@ -32,6 +32,7 @@ $totalSatoshi = 0;
 $addresses = [];
 
 foreach ($data['addresses'] as $addr) {
+    if (!isset($addr['address'])) continue;
     $satoshi = ($addr['final_balance'] ?? 0);
     $btc = $satoshi / 1e8;
     $totalSatoshi += $satoshi;

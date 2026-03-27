@@ -167,3 +167,48 @@
 
 .notification-item__status--critical { color: var(--color-danger); }
 .notification-item__status--degraded { color: var(--color-warning); }
+
+.notification-item--read {
+  opacity: 0.45;
+}
+
+.notification-item__row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.notification-item__time {
+  font-size: 0.7rem;
+  color: var(--color-text-subtle);
+}
+
+.notification-item__dismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 0.125rem;
+  transition: color var(--transition-fast);
+}
+
+.notification-item__dismiss:hover {
+  color: var(--color-text);
+}
+
+.notification-mark-read {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+  padding: 0;
+}
+
+.notification-mark-read:hover {
+  color: var(--color-text);
+}

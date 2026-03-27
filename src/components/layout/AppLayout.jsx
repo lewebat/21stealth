@@ -1,12 +1,13 @@
 import { Outlet } from 'react-router-dom'
-import { Moon, Sun } from 'lucide-react'
+import { Moon, Sun, BookOpen } from 'lucide-react'
 import useUIStore from '@store/useUIStore'
 import { InstallBanner } from '@ui/InstallBanner'
-import { NotificationBell } from '@ui'
+import { NotificationBell, HelpModal } from '@ui'
 
 export default function AppLayout() {
   const theme       = useUIStore((s) => s.theme)
   const toggleTheme = useUIStore((s) => s.toggleTheme)
+  const openHelp    = useUIStore((s) => s.openHelp)
 
   return (
     <div className="page-wrapper">
@@ -15,6 +16,14 @@ export default function AppLayout() {
         <header className="app-header">
           <div className="flex-1" />
           <NotificationBell />
+          <button
+            className="btn-icon transition-base"
+            onClick={() => openHelp()}
+            aria-label="Help"
+            title="Help & Documentation"
+          >
+            <BookOpen size={16} />
+          </button>
           <button
             className="btn-icon transition-base"
             onClick={toggleTheme}
@@ -28,6 +37,7 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <HelpModal />
     </div>
   )
 }

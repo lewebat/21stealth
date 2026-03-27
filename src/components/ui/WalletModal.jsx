@@ -24,7 +24,11 @@ export function WalletModal({ isOpen, onClose, wallet, onSave }) {
   useEffect(() => {
     if (isOpen) {
       setLabel(isEdit ? wallet.label : '')
-      setEntries(isEdit ? wallet.entries.map(e => ({ ...e, addresses: [...e.addresses] })) : [])
+      setEntries(isEdit ? wallet.entries.map(e =>
+        e.type === 'xpub'
+          ? { chain: e.chain, type: 'xpub', xpub: e.xpub }
+          : { ...e, addresses: [...(e.addresses ?? [])] }
+      ) : [])
       setNewAddr('')
       setNewAddrError('')
     }

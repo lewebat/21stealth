@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 import { fetchEthBalances, fetchBtcBalances, fetchSolBalances, fetchLtcBalances, fetchDogeBalances, fetchTrxBalances } from '@/services/blockchain'
+import { fetchXpubBalance } from '@/services/blockchain'
 
 const CACHE_TTL = 60_000
 const cache = new Map() // key: 'chain:address' → { tokens, ts }
@@ -18,6 +19,20 @@ function setCached(chain, address, tokens) {
   cache.set(addrKey(chain, address), { tokens, ts: Date.now() })
 }
 
+function xpubKey(chain, xpub) { return `xpub:${chain}:${xpub}` }
+
+function getCachedXpub(chain, xpub) {
+  const key = xpubKey(chain, xpub)
+  const entry = cache.get(key)
+  if (!entry) return null
+  if (Date.now() - entry.ts > CACHE_TTL) { cache.delete(key); return null }
+  return entry
+}
+
+function setCachedXpub(chain, xpub, tokens, addresses) {
+  cache.set(xpubKey(chain, xpub), { tokens, addresses, ts: Date.now() })
+}
+
 function fetchBalances(chain, address) {
   switch (chain) {
     case 'eth':  return fetchEthBalances(address)
@@ -31,7 +46,15 @@ function fetchBalances(chain, address) {
 }
 
 function allAddrKeys(wallet) {
-  return wallet.entries.flatMap(e => e.addresses.map(a => addrKey(e.chain, a)))
+  return wallet.entries.flatMap(e => {
+    if (e.type === 'xpub') {
+      const k = xpubKey(e.chain, e.xpub)
+      const derived = wallet.derivedAddrs?.[k] ?? []
+      // Always include the placeholder key so aggregateStatus sees loading/error state
+      return [k, ...derived.map(a => addrKey(e.chain, a))]
+    }
+    return e.addresses.map(a => addrKey(e.chain, a))
+  })
 }
 
 function aggregateTokens(addrTokens, keys) {
@@ -82,12 +105,13 @@ function makeWallet(id, label, entries) {
   const addrTokens = {}
   // consumed by WalletCard ChainSection per-chain error display
   const addrError = {}
-  for (const { chain, addresses } of entries) {
-    for (const addr of addresses) {
-      addrStatus[addrKey(chain, addr)] = 'loading'
+  for (const entry of entries) {
+    if (entry.type === 'xpub') continue // loaded async via loadOneXpub
+    for (const addr of entry.addresses) {
+      addrStatus[addrKey(entry.chain, addr)] = 'loading'
     }
   }
-  return recompute({ id, label, entries, addrTokens, addrStatus, addrError })
+  return recompute({ id, label, entries, addrTokens, addrStatus, addrError, derivedAddrs: {} })
 }
 
 export function useWallets() {
@@ -102,7 +126,7 @@ export function useWallets() {
       if (cached) {
         setWallets(prev => prev.map(w => {
           if (w.id !== walletId) return w
-          if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+          if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
           const addrTokens = { ...w.addrTokens, [key]: cached.tokens }
           const addrStatus = { ...w.addrStatus, [key]: 'ok' }
           const addrError = { ...w.addrError }
@@ -115,7 +139,7 @@ export function useWallets() {
 
     setWallets(prev => prev.map(w => {
       if (w.id !== walletId) return w
-      if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+      if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
       return recompute({ ...w, addrStatus: { ...w.addrStatus, [key]: 'loading' } })
     }))
 
@@ -124,7 +148,7 @@ export function useWallets() {
       setCached(chain, address, tokens)
       setWallets(prev => prev.map(w => {
         if (w.id !== walletId) return w
-        if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+        if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
         const addrTokens = { ...w.addrTokens, [key]: tokens }
         const addrStatus = { ...w.addrStatus, [key]: 'ok' }
         const addrError = { ...w.addrError }
@@ -134,7 +158,7 @@ export function useWallets() {
     } catch (err) {
       setWallets(prev => prev.map(w => {
         if (w.id !== walletId) return w
-        if (!w.entries.some(e => e.chain === chain && e.addresses.includes(address))) return w
+        if (!w.entries.some(e => e.type === 'address' && e.chain === chain && e.addresses.includes(address))) return w
         const addrStatus = { ...w.addrStatus, [key]: 'error' }
         const addrError = { ...w.addrError, [key]: err instanceof Error ? err.message : 'Unknown error' }
         return recompute({ ...w, addrStatus, addrError })
@@ -142,13 +166,82 @@ export function useWallets() {
     }
   }, [])
 
-  const loadBalances = useCallback((wallet, force = false) => {
-    for (const { chain, addresses } of wallet.entries) {
-      for (const address of addresses) {
-        loadOneAddress(wallet.id, chain, address, force)
+  const loadOneXpub = useCallback(async (walletId, chain, xpub, force = false) => {
+    const key = xpubKey(chain, xpub)
+
+    if (!force) {
+      const cached = getCachedXpub(chain, xpub)
+      if (cached) {
+        setWallets(prev => prev.map(w => {
+          if (w.id !== walletId) return w
+          if (!w.entries.some(e => e.type === 'xpub' && e.chain === chain && e.xpub === xpub)) return w
+          const addrTokens = { ...w.addrTokens }
+          const addrStatus = { ...w.addrStatus }
+          const addrError  = { ...w.addrError }
+          const derivedAddrs = { ...w.derivedAddrs, [key]: cached.addresses.map(a => a.address) }
+          // Set placeholder key status so aggregateStatus resolves correctly
+          addrTokens[key] = cached.tokens
+          addrStatus[key] = 'ok'
+          for (const { address, tokens } of cached.addresses) {
+            addrTokens[addrKey(chain, address)] = tokens
+            addrStatus[addrKey(chain, address)] = 'ok'
+            delete addrError[addrKey(chain, address)]
+          }
+          return recompute({ ...w, addrTokens, addrStatus, addrError, derivedAddrs })
+        }))
+        return
       }
     }
-  }, [loadOneAddress])
+
+    // Set loading state for this xpub entry (use key as placeholder)
+    setWallets(prev => prev.map(w => {
+      if (w.id !== walletId) return w
+      if (!w.entries.some(e => e.type === 'xpub' && e.chain === chain && e.xpub === xpub)) return w
+      return recompute({ ...w, addrStatus: { ...w.addrStatus, [key]: 'loading' } })
+    }))
+
+    try {
+      const { tokens, addresses } = await fetchXpubBalance(chain, xpub)
+      setCachedXpub(chain, xpub, tokens, addresses)
+      setWallets(prev => prev.map(w => {
+        if (w.id !== walletId) return w
+        if (!w.entries.some(e => e.type === 'xpub' && e.chain === chain && e.xpub === xpub)) return w
+        const addrTokens  = { ...w.addrTokens }
+        const addrStatus  = { ...w.addrStatus }
+        const addrError   = { ...w.addrError }
+        const derivedList = addresses.map(a => a.address)
+        const derivedAddrs = { ...w.derivedAddrs, [key]: derivedList }
+        for (const { address, tokens: t } of addresses) {
+          addrTokens[addrKey(chain, address)] = t
+          addrStatus[addrKey(chain, address)] = 'ok'
+          delete addrError[addrKey(chain, address)]
+        }
+        // Also store aggregate tokens under xpub key for status tracking
+        addrTokens[key] = tokens
+        addrStatus[key] = 'ok'
+        return recompute({ ...w, addrTokens, addrStatus, addrError, derivedAddrs })
+      }))
+    } catch (err) {
+      setWallets(prev => prev.map(w => {
+        if (w.id !== walletId) return w
+        const addrStatus = { ...w.addrStatus, [key]: 'error' }
+        const addrError  = { ...w.addrError, [key]: err instanceof Error ? err.message : 'Unknown error' }
+        return recompute({ ...w, addrStatus, addrError })
+      }))
+    }
+  }, [])
+
+  const loadBalances = useCallback((wallet, force = false) => {
+    for (const entry of wallet.entries) {
+      if (entry.type === 'xpub') {
+        loadOneXpub(wallet.id, entry.chain, entry.xpub, force)
+      } else {
+        for (const address of entry.addresses) {
+          loadOneAddress(wallet.id, entry.chain, address, force)
+        }
+      }
+    }
+  }, [loadOneAddress, loadOneXpub])
 
   const addWallet = useCallback((label, entries) => {
     const wallet = makeWallet(crypto.randomUUID(), label, entries)
@@ -174,12 +267,26 @@ export function useWallets() {
       const addrTokens = {}
       const addrStatus = {}
       const addrError = {}
-      for (const { chain, addresses } of newEntries) {
-        for (const addr of addresses) {
-          const k = addrKey(chain, addr)
+      for (const entry of newEntries) {
+        if (entry.type === 'xpub') {
+          const k = xpubKey(entry.chain, entry.xpub)
           addrTokens[k] = w.addrTokens[k] ?? []
           addrStatus[k] = w.addrStatus[k] ?? 'loading'
           if (w.addrError[k]) addrError[k] = w.addrError[k]
+          // carry forward derived address data so status doesn't regress on label-only updates
+          for (const addr of (w.derivedAddrs?.[k] ?? [])) {
+            const ak = addrKey(entry.chain, addr)
+            addrTokens[ak] = w.addrTokens[ak] ?? []
+            addrStatus[ak] = w.addrStatus[ak] ?? 'loading'
+            if (w.addrError[ak]) addrError[ak] = w.addrError[ak]
+          }
+        } else {
+          for (const addr of entry.addresses) {
+            const k = addrKey(entry.chain, addr)
+            addrTokens[k] = w.addrTokens[k] ?? []
+            addrStatus[k] = w.addrStatus[k] ?? 'loading'
+            if (w.addrError[k]) addrError[k] = w.addrError[k]
+          }
         }
       }
 
@@ -187,15 +294,31 @@ export function useWallets() {
     }))
 
     if (patch.entries) {
-      for (const { chain, addresses } of newEntries) {
-        for (const addr of addresses) {
-          if (!existingKeys.has(addrKey(chain, addr))) {
-            loadOneAddress(id, chain, addr, false)
+      const existingXpubKeys = new Set(
+        currentWallet.entries
+          .filter(e => e.type === 'xpub')
+          .map(e => xpubKey(e.chain, e.xpub))
+      )
+      for (const entry of newEntries) {
+        if (entry.type === 'xpub') {
+          if (!existingXpubKeys.has(xpubKey(entry.chain, entry.xpub))) {
+            // Evict the OLD xpub key for this chain (not the new one)
+            const oldEntry = currentWallet.entries.find(
+              e => e.type === 'xpub' && e.chain === entry.chain
+            )
+            if (oldEntry) cache.delete(xpubKey(oldEntry.chain, oldEntry.xpub))
+            loadOneXpub(id, entry.chain, entry.xpub, false)
+          }
+        } else {
+          for (const addr of entry.addresses) {
+            if (!existingKeys.has(addrKey(entry.chain, addr))) {
+              loadOneAddress(id, entry.chain, addr, false)
+            }
           }
         }
       }
     }
-  }, [loadOneAddress])
+  }, [loadOneAddress, loadOneXpub])
 
   const refreshWallet = useCallback((id) => {
     const wallet = walletsRef.current.find(w => w.id === id)

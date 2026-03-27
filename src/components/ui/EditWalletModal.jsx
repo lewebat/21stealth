@@ -3,7 +3,7 @@ import { X } from 'lucide-react'
 import { Modal } from './Modal'
 import { FloatInput } from './Form'
 import Button from './Button'
-import { detectChain } from '@utils/detectChain'
+import { detectInput } from '@utils/detectInput'
 
 const CHAIN_LABELS = { eth: 'Ethereum', btc: 'Bitcoin', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron' }
 const CHAIN_BADGE = {
@@ -23,7 +23,11 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
   useEffect(() => {
     if (isOpen && wallet) {
       setLabel(wallet.label)
-      setEntries(wallet.entries.map(e => ({ ...e, addresses: [...e.addresses] })))
+      setEntries(wallet.entries.map(e =>
+        e.type === 'xpub'
+          ? { chain: e.chain, type: 'xpub', xpub: e.xpub }
+          : { chain: e.chain, type: 'address', addresses: [...e.addresses] }
+      ))
       setEntryInputs({})
       setNewChainAddr('')
       setNewChainError('')
@@ -46,8 +50,8 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
     const entry = entries.find(e => e.chain === chain)
     if (!entry) return
     if (entry.addresses.includes(value)) { setEntryError(chain, 'Address already added'); return }
-    const detected = detectChain(value)
-    if (!detected || detected !== chain) {
+    const detected = detectInput(value)
+    if (!detected || detected.chain !== chain) {
       setEntryError(chain, `Invalid address (expected: ${chain.toUpperCase()})`)
       return
     }
@@ -69,13 +73,17 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
   function handleAddChainEntry() {
     const trimmed = newChainAddr.trim()
     if (!trimmed) return
-    const detected = detectChain(trimmed)
-    if (!detected) { setNewChainError('Unknown address'); return }
-    if (usedChains.has(detected)) {
-      setNewChainError(`${CHAIN_LABELS[detected] ?? detected} already exists — add more addresses to the existing entry`)
+    const detected = detectInput(trimmed)
+    if (!detected) { setNewChainError('Unknown format — please enter a valid address or xPub key'); return }
+    if (usedChains.has(detected.chain)) {
+      setNewChainError(`${CHAIN_LABELS[detected.chain] ?? detected.chain} already exists`)
       return
     }
-    setEntries(prev => [...prev, { chain: detected, addresses: [trimmed] }])
+    if (detected.type === 'xpub') {
+      setEntries(prev => [...prev, { chain: detected.chain, type: 'xpub', xpub: trimmed }])
+    } else {
+      setEntries(prev => [...prev, { chain: detected.chain, type: 'address', addresses: [trimmed] }])
+    }
     setNewChainAddr('')
     setNewChainError('')
   }
@@ -100,7 +108,30 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
           />
 
           {/* Per-chain entry sections */}
-          {entries.map(({ chain, addresses }) => {
+          {entries.map(entry => {
+            const { chain } = entry
+            if (entry.type === 'xpub') {
+              return (
+                <div key={chain} className="chain-entry">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
+                      <span className="font-mono text-caption text-text-muted">
+                        {entry.xpub.slice(0, 10)}••••••
+                      </span>
+                      <span className="text-label text-text-subtle">xPub</span>
+                    </div>
+                    {entries.length > 1 && (
+                      <button type="button" className="btn-icon text-danger"
+                        onClick={() => handleRemoveChainEntry(chain)}>
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            }
+            const { addresses } = entry
             const input = entryInputs[chain] ?? { value: '', error: '' }
             const atMax = addresses.length >= MAX_ADDRESSES
             return (

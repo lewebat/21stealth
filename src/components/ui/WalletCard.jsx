@@ -36,7 +36,11 @@ function aggregateTokens(addresses, chain, addrTokens) {
 
 export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, prices, hideSmall, fullAddresses }) {
   const totalUsd = wallet.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0)
-  const allKeys = wallet.entries.flatMap(e => e.addresses.map(a => `${e.chain}:${a}`))
+  const allKeys = wallet.entries.flatMap(e =>
+    e.type === 'xpub'
+      ? [`xpub:${e.chain}:${e.xpub}`]
+      : e.addresses.map(a => `${e.chain}:${a}`)
+  )
   const isPartialError = wallet.status === 'error' &&
     allKeys.some(k => wallet.addrStatus[k] === 'ok')
   const chainCount = wallet.entries.length
@@ -49,9 +53,15 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
     }
     return [...wallet.entries]
       .sort((a, b) => (chainUsd.get(b.chain) ?? 0) - (chainUsd.get(a.chain) ?? 0))
-      .map(({ chain, addresses }) => {
+      .map((entry) => {
+        const { chain, type, xpub } = entry
+        const addresses = type === 'xpub'
+          ? (wallet.derivedAddrs?.[`xpub:${chain}:${xpub}`] ?? [])
+          : entry.addresses
         const statuses = addresses.map(a => wallet.addrStatus[`${chain}:${a}`] ?? 'loading')
-        const status = statuses.some(s => s === 'loading') ? 'loading'
+        const status = addresses.length === 0
+          ? 'loading'
+          : statuses.some(s => s === 'loading') ? 'loading'
           : statuses.every(s => s === 'error') ? 'error'
           : 'ok'
         const firstError = addresses.map(a => wallet.addrError[`${chain}:${a}`]).find(Boolean)
@@ -59,10 +69,10 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
         const tokens = tokensWithUsd(rawTokens, prices)
           .filter(t => !hideSmall || t.usd >= 1)
           .sort((a, b) => b.usd - a.usd)
-        return { chain, addresses, status, firstError, tokens }
+        return { chain, type, xpub, addresses, status, firstError, tokens }
       })
       .filter(c => !hideSmall || c.status !== 'ok' || c.tokens.length > 0)
-  }, [wallet.entries, wallet.tokens, wallet.addrTokens, wallet.addrStatus, wallet.addrError, prices, hideSmall])
+  }, [wallet.entries, wallet.tokens, wallet.addrTokens, wallet.addrStatus, wallet.addrError, wallet.derivedAddrs, prices, hideSmall])
 
   const allHidden = hideSmall && chains.length === 0
   const [expandedChains, setExpandedChains] = useState(new Set())
@@ -106,26 +116,50 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
           <div className="table-wrapper">
             <table className="table table-compact">
               <tbody>
-                {chains.map(({ chain, addresses, status, firstError, tokens }) => {
-                  const addrLabel = addresses.length === 1
-                    ? (fullAddresses ? addresses[0] : shorten(addresses[0]))
-                    : `${addresses.length} addresses`
+                {chains.map(({ chain, type, xpub, addresses, status, firstError, tokens }) => {
+                  const isXpub = type === 'xpub'
+                  const addrLabel = isXpub
+                    ? null
+                    : addresses.length === 1
+                      ? (fullAddresses ? addresses[0] : shorten(addresses[0]))
+                      : `${addresses.length} addresses`
                   return (
                   <Fragment key={chain}>
                     <tr key={`${chain}-header`} className="chain-header-row">
                       <td colSpan={3} className="pb-0 pt-0">
                         <div className="flex items-center gap-2">
                           <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
-                          <span className="text-caption font-mono text-text-subtle truncate">{addrLabel}</span>
-                          {addresses.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => toggleExpand(chain)}
-                              className="btn-icon btn-icon-xs text-text-subtle hover:text-text"
-                              title={expandedChains.has(chain) ? 'Hide addresses' : 'Show addresses'}
-                            >
-                              {expandedChains.has(chain) ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                            </button>
+                          {isXpub ? (
+                            <>
+                              <span className="font-mono text-caption text-text-subtle">
+                                {xpub.slice(0, 10)}••••••
+                              </span>
+                              <span className="text-label text-text-subtle">xPub</span>
+                              {addresses.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpand(chain)}
+                                  className="btn-icon btn-icon-xs text-text-subtle hover:text-text"
+                                  title={expandedChains.has(chain) ? 'Hide addresses' : 'Show addresses'}
+                                >
+                                  {expandedChains.has(chain) ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <span className="text-caption font-mono text-text-subtle truncate">{addrLabel}</span>
+                              {addresses.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => toggleExpand(chain)}
+                                  className="btn-icon btn-icon-xs text-text-subtle hover:text-text"
+                                  title={expandedChains.has(chain) ? 'Hide addresses' : 'Show addresses'}
+                                >
+                                  {expandedChains.has(chain) ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                       </td>
@@ -167,35 +201,66 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                         </tr>
                       )
                     })}
-                    {status === 'ok' && expandedChains.has(chain) && addresses.map(addr => {
-                      const addrTokensRaw = tokensWithUsd(wallet.addrTokens[`${chain}:${addr}`] ?? [], prices)
-                        .filter(t => !hideSmall || t.usd >= 1)
-                        .sort((a, b) => b.usd - a.usd)
-                      return (
-                        <Fragment key={`${chain}-${addr}`}>
-                          <tr key={`${chain}-${addr}-header`} className="chain-header-row">
-                            <td colSpan={3} className="pb-0 pt-0">
-                              <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
-                            </td>
-                          </tr>
-                          {addrTokensRaw.length === 0 ? (
-                            <tr key={`${chain}-${addr}-empty`}>
-                              <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
-                            </tr>
-                          ) : addrTokensRaw.map(token => (
-                            <tr key={`${chain}-${addr}-${token.key}`}>
-                              <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
-                              <td>
-                                <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
-                              </td>
-                              <td>
-                                <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
-                              </td>
-                            </tr>
-                          ))}
-                        </Fragment>
-                      )
-                    })}
+                    {status === 'ok' && expandedChains.has(chain) && (isXpub
+                      ? addresses.map(addr => {
+                          const addrTokensRaw = tokensWithUsd(wallet.addrTokens[`${chain}:${addr}`] ?? [], prices)
+                            .filter(t => !hideSmall || t.usd >= 1)
+                            .sort((a, b) => b.usd - a.usd)
+                          return (
+                            <Fragment key={`${chain}-${addr}`}>
+                              <tr key={`${chain}-${addr}-header`} className="chain-header-row">
+                                <td colSpan={3} className="pb-0 pt-0">
+                                  <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
+                                </td>
+                              </tr>
+                              {addrTokensRaw.length === 0 ? (
+                                <tr key={`${chain}-${addr}-empty`}>
+                                  <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
+                                </tr>
+                              ) : addrTokensRaw.map(token => (
+                                <tr key={`${chain}-${addr}-${token.key}`}>
+                                  <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
+                                  <td>
+                                    <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
+                                  </td>
+                                  <td>
+                                    <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </Fragment>
+                          )
+                        })
+                      : addresses.map(addr => {
+                          const addrTokensRaw = tokensWithUsd(wallet.addrTokens[`${chain}:${addr}`] ?? [], prices)
+                            .filter(t => !hideSmall || t.usd >= 1)
+                            .sort((a, b) => b.usd - a.usd)
+                          return (
+                            <Fragment key={`${chain}-${addr}`}>
+                              <tr key={`${chain}-${addr}-header`} className="chain-header-row">
+                                <td colSpan={3} className="pb-0 pt-0">
+                                  <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
+                                </td>
+                              </tr>
+                              {addrTokensRaw.length === 0 ? (
+                                <tr key={`${chain}-${addr}-empty`}>
+                                  <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
+                                </tr>
+                              ) : addrTokensRaw.map(token => (
+                                <tr key={`${chain}-${addr}-${token.key}`}>
+                                  <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
+                                  <td>
+                                    <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
+                                  </td>
+                                  <td>
+                                    <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </Fragment>
+                          )
+                        })
+                    )}
                   </Fragment>
                   )
                 })}

@@ -24,7 +24,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
   const firstDetected = detectInput(firstTrimmed)   // { chain, type } | null
   const firstChain    = firstDetected?.chain ?? null
   const firstIsXpub   = firstDetected?.type === 'xpub'
-  const allAddedAddrs = firstChain && !firstIsXpub ? [firstTrimmed, ...extraAddresses] : []
+  const allAddedAddrs = firstChain && !firstIsXpub ? [firstTrimmed, ...extraAddresses] : [...extraAddresses]
 
   // Group all addresses by chain, preserving insertion order
   function buildEntries(extra = extraAddresses) {

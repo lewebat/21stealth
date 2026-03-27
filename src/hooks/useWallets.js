@@ -174,6 +174,7 @@ export function useWallets() {
       if (cached) {
         setWallets(prev => prev.map(w => {
           if (w.id !== walletId) return w
+          if (!w.entries.some(e => e.type === 'xpub' && e.chain === chain && e.xpub === xpub)) return w
           const addrTokens = { ...w.addrTokens }
           const addrStatus = { ...w.addrStatus }
           const addrError  = { ...w.addrError }
@@ -195,6 +196,7 @@ export function useWallets() {
     // Set loading state for this xpub entry (use key as placeholder)
     setWallets(prev => prev.map(w => {
       if (w.id !== walletId) return w
+      if (!w.entries.some(e => e.type === 'xpub' && e.chain === chain && e.xpub === xpub)) return w
       return recompute({ ...w, addrStatus: { ...w.addrStatus, [key]: 'loading' } })
     }))
 
@@ -203,12 +205,12 @@ export function useWallets() {
       setCachedXpub(chain, xpub, tokens, addresses)
       setWallets(prev => prev.map(w => {
         if (w.id !== walletId) return w
+        if (!w.entries.some(e => e.type === 'xpub' && e.chain === chain && e.xpub === xpub)) return w
         const addrTokens  = { ...w.addrTokens }
         const addrStatus  = { ...w.addrStatus }
         const addrError   = { ...w.addrError }
         const derivedList = addresses.map(a => a.address)
         const derivedAddrs = { ...w.derivedAddrs, [key]: derivedList }
-        delete addrStatus[key] // remove placeholder
         for (const { address, tokens: t } of addresses) {
           addrTokens[addrKey(chain, address)] = t
           addrStatus[addrKey(chain, address)] = 'ok'
@@ -271,6 +273,13 @@ export function useWallets() {
           addrTokens[k] = w.addrTokens[k] ?? []
           addrStatus[k] = w.addrStatus[k] ?? 'loading'
           if (w.addrError[k]) addrError[k] = w.addrError[k]
+          // carry forward derived address data so status doesn't regress on label-only updates
+          for (const addr of (w.derivedAddrs?.[k] ?? [])) {
+            const ak = addrKey(entry.chain, addr)
+            addrTokens[ak] = w.addrTokens[ak] ?? []
+            addrStatus[ak] = w.addrStatus[ak] ?? 'loading'
+            if (w.addrError[ak]) addrError[ak] = w.addrError[ak]
+          }
         } else {
           for (const addr of entry.addresses) {
             const k = addrKey(entry.chain, addr)

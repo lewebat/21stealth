@@ -24,6 +24,12 @@ const useUIStore = create(
 
       removeToast: (id) =>
         set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+
+      helpOpen: false,
+      helpArticle: null, // null = show ToC; string key = show specific article
+
+      openHelp: (key = null) => set({ helpOpen: true, helpArticle: key }),
+      closeHelp: () => set({ helpOpen: false, helpArticle: null }),
     }),
     {
       name: 'ui-store',

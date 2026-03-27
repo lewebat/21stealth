@@ -30,8 +30,9 @@ export function useInstallPrompt() {
     setPromptEvent(null)
   }
 
-  // iOS detection — beforeinstallprompt doesn't fire on Safari
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream
+  // iOS detection — beforeinstallprompt doesn't fire on Safari/Chrome iOS
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
   const showIOSHint = isIOS && !isInstalled
 
   return {

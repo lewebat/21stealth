@@ -4,6 +4,7 @@ import { Modal } from './Modal'
 import { FloatInput } from './Form'
 import Button from './Button'
 import { detectInput } from '@utils/detectInput'
+import { HelpLink } from '@ui'
 
 const CHAIN_LABELS = { eth: 'Ethereum', btc: 'Bitcoin', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron' }
 const CHAIN_BADGE = {
@@ -206,7 +207,8 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
             {newChainError && <p className="form-error mt-1">{newChainError}</p>}
             <p className="flex items-center gap-1.5 text-caption text-text-subtle mt-1">
               <Info size={12} className="shrink-0" />
-              Enter a wallet address or xPub key. Supported: BTC, ETH, SOL, LTC, DOGE, TRX — chain is detected automatically.
+              Enter a wallet address or xPub key. Supported: BTC, ETH, SOL, LTC, DOGE, TRX — chain is detected automatically.{' '}
+              <HelpLink articleKey="xpub-explained">What is an xPub?</HelpLink>
             </p>
           </div>
 

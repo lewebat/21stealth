@@ -194,7 +194,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
           <div>
             <div className="flex gap-2">
               <FloatInput
-                label="Add another chain — address auto-detected"
+                label="Add another chain — address or xPub auto-detected"
                 type="text"
                 value={newChainAddr}
                 onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}

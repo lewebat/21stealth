@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { X } from 'lucide-react'
 import { detectInput } from '@utils/detectInput'
 import { FloatInput } from './Form'
@@ -42,7 +42,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
     if (!trimmed) return
     const detected = detectInput(trimmed)
     if (!detected) { setInputError('Unknown format — please enter a valid address or xPub key'); return }
-    const currentEntries = buildEntries(addresses)
+    const currentEntries = allEntries
     const existingEntry = currentEntries.find(e => e.chain === detected.chain)
     if (detected.type === 'xpub') {
       if (existingEntry) { setInputError('Only one xPub per chain supported — use a separate wallet'); return }
@@ -67,14 +67,14 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
     onClose()
   }
 
-  const allEntries = buildEntries(addresses)
+  const allEntries = useMemo(() => buildEntries(addresses), [addresses])
   const detected = detectInput(inputValue.trim())
   const inputFeedback = inputValue.length > 0
     ? detected
-      ? <span className="text-success text-xs font-semibold">
+      ? <span className="text-label text-success">
           {detected.type === 'xpub' ? `${detected.chain?.toUpperCase()} xPub` : CHAIN_LABELS[detected.chain]}
         </span>
-      : <span className="text-danger text-xs font-semibold">Unknown</span>
+      : <span className="text-label text-danger">Unknown</span>
     : null
 
   return (

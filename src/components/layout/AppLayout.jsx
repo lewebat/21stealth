@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { Moon, Sun, BookOpen } from 'lucide-react'
 import useUIStore from '@store/useUIStore'
 import { InstallBanner } from '@ui/InstallBanner'
-import { NotificationBell, HelpModal } from '@ui'
+import { NotificationBell, HelpModal, Toaster } from '@ui'
 
 export default function AppLayout() {
   const theme       = useUIStore((s) => s.theme)
@@ -39,6 +39,7 @@ export default function AppLayout() {
         </main>
       </div>
       <HelpModal />
+      <Toaster />
     </div>
   )
 }

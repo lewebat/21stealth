@@ -19,15 +19,44 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
   const [savedPassword, setSavedPassword] = useState('')
   const [isEncrypted, setIsEncrypted] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
   const savedFlashRef = useRef(null)
-  const addAppNotification    = useUIStore((s) => s.addAppNotification)
+  const mountedRef = useRef(false)
+  const skipDirtyRef = useRef(false)
+  const addAppNotification     = useUIStore((s) => s.addAppNotification)
   const dismissAppNotification = useUIStore((s) => s.dismissAppNotification)
+  const addToast               = useUIStore((s) => s.addToast)
 
   const closeModal = () => { setModal(null); setPassword(''); setPasswordConfirm(''); setError(''); setShowPassword(false) }
+
+  // Only watch wallet structure (id, label, entries) — not balance data or history.
+  // Balance loads change tokens/status but not entries, so they don't trigger dirty.
+  const walletsKey = wallets.map(w => `${w.id}:${w.label}:${JSON.stringify(w.entries)}`).join('|')
+
+  // Track unsaved changes — skip initial mount and post-import changes
+  useEffect(() => {
+    if (!mountedRef.current) { mountedRef.current = true; return }
+    if (skipDirtyRef.current) { skipDirtyRef.current = false; return }
+    if (wallets.length > 0) setIsDirty(true)
+  }, [walletsKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Warn before leaving when there are unsaved changes
+  useEffect(() => {
+    if (!isDirty) return
+    const handler = (e) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isDirty])
+
+  function markClean() {
+    setIsDirty(false)
+    skipDirtyRef.current = true
+  }
 
   function flashSaved() {
     if (savedFlashRef.current) clearTimeout(savedFlashRef.current)
     setSavedFlash(true)
+    setIsDirty(false)
     dismissAppNotification('auto-save-failed')
     savedFlashRef.current = setTimeout(() => setSavedFlash(false), 2000)
   }
@@ -38,9 +67,11 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
     const timer = setTimeout(async () => {
       try {
         await saveToHandle(fileHandle, wallets, history, isEncrypted ? savedPassword : undefined)
+        setIsDirty(false)
       } catch {
         setFileHandle(null)
-        addAppNotification({ id: 'auto-save-failed', type: 'warning', message: 'Auto-save failed — click Save to reconnect your file.' })
+        addAppNotification({ id: 'auto-save-failed', type: 'warning', message: 'Auto-save failed — click Save to save your file.' })
+        addToast({ type: 'warning', message: 'Auto-save failed — click Save to save your file.' })
       }
     }, 1000)
     return () => clearTimeout(timer)
@@ -48,6 +79,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
 
   async function handleExportSubmit(encrypted) {
     await exportConfig(wallets, history, encrypted ? password : undefined)
+    setIsDirty(false)
     closeModal()
   }
 
@@ -63,6 +95,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
           setFileHandle(handle)
           setIsEncrypted(false)
           setSavedPassword('')
+          markClean()
           onImport(imported, importedHistory)
         } catch (err) {
           if (err instanceof NeedsPasswordError) {
@@ -85,6 +118,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
     e.target.value = ''
     try {
       const { wallets: imported, history: importedHistory } = await importConfig(file)
+      markClean()
       onImport(imported, importedHistory)
     } catch (err) {
       if (err instanceof NeedsPasswordError) {
@@ -105,6 +139,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         setIsEncrypted(true)
         setSavedPassword(password)
       }
+      markClean()
       onImport(imported, importedHistory)
       closeModal()
     } catch (err) {
@@ -114,7 +149,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
 
   async function handleSave() {
     if (!supportsFileAccess) {
-      setModal({ type: 'export' })
+      setModal({ type: 'export', isSave: true })
       return
     }
     if (fileHandle) {
@@ -158,18 +193,19 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         </Button>
         <Button variant="secondary" size="sm" onClick={handleSave} disabled={wallets.length === 0}>
           {savedFlash ? 'Saved ✓' : 'Save'}
+          {isDirty && !savedFlash && <span className="inline-block w-1.5 h-1.5 rounded-full bg-warning ml-1 align-middle" />}
         </Button>
-<input ref={fileInputRef} type="file" accept=".21s" onChange={handleFileChange} className="visually-hidden" />
+        <input ref={fileInputRef} type="file" accept=".21s,application/json" onChange={handleFileChange} className="visually-hidden" />
       </div>
 
       {/* Export Modal */}
-      <Modal isOpen={modal?.type === 'export'} onClose={closeModal} title="Export config" size="sm">
+      <Modal isOpen={modal?.type === 'export'} onClose={closeModal} title={modal?.isSave ? 'Save config' : 'Export config'} size="sm">
         <Modal.Body>
           <div className="stack stack-md">
             <p className="text-body text-text-muted">
               Encrypt the file with a password — without a password it will be stored in plain text.
             </p>
-            <FormGroup label="Password" htmlFor="export-password" helper="Leave empty for unencrypted export">
+            <FormGroup label="Password" htmlFor="export-password" helper={`Leave empty for unencrypted ${modal?.isSave ? 'save' : 'export'}`}>
               <Input
                 id="export-password"
                 type={showPassword ? 'text' : 'password'}
@@ -198,7 +234,9 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         <Modal.Footer>
           <Button variant="secondary" onClick={closeModal}>Cancel</Button>
           <Button variant="primary" onClick={() => handleExportSubmit(password.length > 0)} disabled={password.length > 0 && password !== passwordConfirm}>
-            {password.length > 0 ? 'Export encrypted' : 'Export unencrypted'}
+            {modal?.isSave
+              ? (password.length > 0 ? 'Save encrypted' : 'Save unencrypted')
+              : (password.length > 0 ? 'Export encrypted' : 'Export unencrypted')}
           </Button>
         </Modal.Footer>
       </Modal>

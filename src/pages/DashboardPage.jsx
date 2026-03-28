@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Lock, SlidersHorizontal } from 'lucide-react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
@@ -18,6 +18,11 @@ export default function DashboardPage() {
   const filterRef = useRef(null)
   const [addingWallet, setAddingWallet] = useState(false)
   const editingWallet = editingWalletId ? wallets.find(w => w.id === editingWalletId) ?? null : null
+  const sortedWallets = useMemo(() =>
+    [...wallets].sort((a, b) =>
+      b.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0) -
+      a.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0)
+    ), [wallets, prices])
   const intervalRef = useRef(null)
 
   function startPricePolling() {
@@ -139,10 +144,7 @@ export default function DashboardPage() {
 
 
           <Grid gap="md" className="items-stretch">
-            {[...wallets].sort((a, b) =>
-              b.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0) -
-              a.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0)
-            ).map(wallet => (
+            {sortedWallets.map(wallet => (
               <Grid.Col key={wallet.id} span="half">
                 <WalletCard
                   wallet={wallet}

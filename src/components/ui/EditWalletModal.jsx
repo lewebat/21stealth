@@ -11,10 +11,9 @@ const MAX_ADDRESSES = 10
 
 export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
   const [label, setLabel] = useState('')
-  const [entries, setEntries] = useState([])       // [{chain, addresses}]
-  const [entryInputs, setEntryInputs] = useState({}) // {chain: {value, error}}
-  const [newChainAddr, setNewChainAddr] = useState('')
-  const [newChainError, setNewChainError] = useState('')
+  const [entries, setEntries] = useState([])
+  const [inputValue, setInputValue] = useState('')
+  const [inputError, setInputError] = useState('')
 
   useEffect(() => {
     if (isOpen && wallet) {
@@ -24,35 +23,35 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
           ? { chain: e.chain, type: 'xpub', xpub: e.xpub }
           : { chain: e.chain, type: 'address', addresses: [...e.addresses] }
       ))
-      setEntryInputs({})
-      setNewChainAddr('')
-      setNewChainError('')
+      setInputValue('')
+      setInputError('')
     }
   }, [isOpen, wallet?.id])
 
-  const usedChains = new Set(entries.map(e => e.chain))
+  function handleAdd() {
+    const trimmed = inputValue.trim()
+    if (!trimmed) return
+    const detected = detectInput(trimmed)
+    if (!detected) { setInputError('Unknown format — please enter a valid address or xPub key'); return }
 
-  function setEntryInput(chain, value) {
-    setEntryInputs(prev => ({ ...prev, [chain]: { value, error: '' } }))
-  }
+    const existingEntry = entries.find(e => e.chain === detected.chain)
 
-  function setEntryError(chain, error) {
-    setEntryInputs(prev => ({ ...prev, [chain]: { ...prev[chain], error } }))
-  }
-
-  function handleAddAddress(chain) {
-    const value = entryInputs[chain]?.value?.trim() ?? ''
-    if (!value) return
-    const entry = entries.find(e => e.chain === chain)
-    if (!entry) return
-    if (entry.addresses.includes(value)) { setEntryError(chain, 'Address already added'); return }
-    const detected = detectInput(value)
-    if (!detected || detected.chain !== chain) {
-      setEntryError(chain, `Invalid address (expected: ${chain.toUpperCase()})`)
-      return
+    if (detected.type === 'xpub') {
+      if (existingEntry) { setInputError('Only one xPub per chain supported — use a separate wallet'); return }
+      setEntries(prev => [...prev, { chain: detected.chain, type: 'xpub', xpub: trimmed }])
+    } else {
+      if (existingEntry?.type === 'xpub') { setInputError(`${detected.chain.toUpperCase()} already tracked via xPub`); return }
+      if (existingEntry?.type === 'address') {
+        if (existingEntry.addresses.includes(trimmed)) { setInputError('Address already added'); return }
+        if (existingEntry.addresses.length >= MAX_ADDRESSES) { setInputError(`Max ${MAX_ADDRESSES} addresses for ${detected.chain.toUpperCase()}`); return }
+        setEntries(prev => prev.map(e => e.chain === detected.chain ? { ...e, addresses: [...e.addresses, trimmed] } : e))
+      } else {
+        setEntries(prev => [...prev, { chain: detected.chain, type: 'address', addresses: [trimmed] }])
+      }
     }
-    setEntries(prev => prev.map(e => e.chain === chain ? { ...e, addresses: [...e.addresses, value] } : e))
-    setEntryInput(chain, '')
+    setInputValue('')
+    setInputError('')
+    document.getElementById('edit-new-entry')?.focus()
   }
 
   function handleRemoveAddress(chain, addr) {
@@ -66,29 +65,20 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
     setEntries(prev => prev.filter(e => e.chain !== chain))
   }
 
-  function handleAddChainEntry() {
-    const trimmed = newChainAddr.trim()
-    if (!trimmed) return
-    const detected = detectInput(trimmed)
-    if (!detected) { setNewChainError('Unknown format — please enter a valid address or xPub key'); return }
-    if (usedChains.has(detected.chain)) {
-      setNewChainError(`${CHAIN_LABELS[detected.chain] ?? detected.chain} already exists`)
-      return
-    }
-    if (detected.type === 'xpub') {
-      setEntries(prev => [...prev, { chain: detected.chain, type: 'xpub', xpub: trimmed }])
-    } else {
-      setEntries(prev => [...prev, { chain: detected.chain, type: 'address', addresses: [trimmed] }])
-    }
-    setNewChainAddr('')
-    setNewChainError('')
-  }
-
   function handleSave() {
     const firstEntry = entries[0]
     const fallbackLabel = firstEntry ? (CHAIN_LABELS[firstEntry.chain] ?? 'Wallet') : 'Wallet'
     onSave(wallet.id, { label: label.trim() || fallbackLabel, entries })
   }
+
+  const detected = detectInput(inputValue.trim())
+  const inputFeedback = inputValue.length > 0
+    ? detected
+      ? <span className="text-label text-success">
+          {detected.type === 'xpub' ? `${detected.chain?.toUpperCase()} xPub` : CHAIN_LABELS[detected.chain]}
+        </span>
+      : <span className="text-label text-danger">Unknown</span>
+    : null
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit wallet" size="md">
@@ -103,7 +93,6 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
             onChange={e => setLabel(e.target.value)}
           />
 
-          {/* Per-chain entry sections */}
           {entries.map(entry => {
             const { chain } = entry
             if (entry.type === 'xpub') {
@@ -128,15 +117,11 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
               )
             }
             const { addresses } = entry
-            const input = entryInputs[chain] ?? { value: '', error: '' }
-            const atMax = addresses.length >= MAX_ADDRESSES
             return (
               <div key={chain} className="chain-entry">
                 <div className="chain-entry-header">
                   <div className="flex items-center gap-2">
-                    <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>
-                      {chain.toUpperCase()}
-                    </span>
+                    <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
                     <span className="text-caption text-text-muted">{CHAIN_LABELS[chain]}</span>
                   </div>
                   <button
@@ -163,43 +148,26 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                       </button>
                     </div>
                   ))}
-                  {!atMax ? (
-                    <div>
-                      <div className="flex gap-2">
-                        <FloatInput
-                          label={`New ${chain.toUpperCase()} address`}
-                          type="text"
-                          value={input.value}
-                          onChange={e => setEntryInput(chain, e.target.value)}
-                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddAddress(chain) } }}
-                          className="font-mono flex-1"
-                        />
-                        <Button type="button" variant="secondary" onClick={() => handleAddAddress(chain)}>+</Button>
-                      </div>
-                      {input.error && <p className="form-error mt-1">{input.error}</p>}
-                    </div>
-                  ) : (
-                    <p className="text-caption text-text-muted">Maximum of {MAX_ADDRESSES} addresses reached</p>
-                  )}
                 </div>
               </div>
             )
           })}
 
-          {/* Add new chain entry */}
           <div>
             <div className="flex gap-2 w-full">
               <FloatInput
-                label="Add another chain or xPub"
+                id="edit-new-entry"
+                label="Add another address or xPub"
                 type="text"
-                value={newChainAddr}
-                onChange={e => { setNewChainAddr(e.target.value); setNewChainError('') }}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddChainEntry() } }}
+                value={inputValue}
+                onChange={e => { setInputValue(e.target.value); setInputError('') }}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAdd() } }}
                 className="font-mono flex-1"
+                iconRight={inputFeedback}
               />
-              <Button type="button" variant="secondary" onClick={handleAddChainEntry} className="ml-auto">+</Button>
+              <Button type="button" variant="secondary" onClick={handleAdd}>+</Button>
             </div>
-            {newChainError && <p className="form-error mt-1">{newChainError}</p>}
+            {inputError && <p className="form-error mt-1">{inputError}</p>}
             <p className="text-caption text-text-subtle mt-1">
               Enter a wallet address or xPub key.{' '}
               <HelpLink articleKey="xpub-explained">Learn more about xPub</HelpLink>

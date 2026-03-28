@@ -75,7 +75,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
       }
     }, 1000)
     return () => clearTimeout(timer)
-  }, [walletsKey, history, fileHandle, savedPassword, isEncrypted, addAppNotification]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [walletsKey, history, fileHandle, savedPassword, isEncrypted, addAppNotification, addToast]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleExportSubmit(encrypted) {
     await exportConfig(wallets, history, encrypted ? password : undefined)

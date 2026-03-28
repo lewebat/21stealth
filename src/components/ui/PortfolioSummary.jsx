@@ -111,7 +111,7 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
       header: () => <span className="block text-right">Balance</span>,
       accessorKey: 'balance',
       cell: ({ getValue, row }) => (
-        <div className="text-right font-mono text-caption">
+        <div className="currency-cell">
           {fmtHoldings(getValue(), row.original.key)} <span className="text-text-subtle">{row.original.key.toUpperCase()}</span>
         </div>
       ),

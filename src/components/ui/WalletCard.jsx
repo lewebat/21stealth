@@ -209,7 +209,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                             </div>
                           </td>
                           <td>
-                            <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
+                            <div className="currency-cell text-text-muted">{formatCurrency(token.usd)}</div>
                           </td>
                         </tr>
                       )
@@ -233,10 +233,10 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                             <tr key={`${chain}-${addr}-${token.key}`}>
                               <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
                               <td>
-                                <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
+                                <div className="currency-cell">{fmtBalance(token.balance, token.key)}</div>
                               </td>
                               <td>
-                                <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
+                                <div className="currency-cell text-text-muted">{formatCurrency(token.usd)}</div>
                               </td>
                             </tr>
                           ))}

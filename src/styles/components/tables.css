@@ -55,6 +55,13 @@
   background: linear-gradient(90deg, transparent 0%, var(--color-surface) 25%, var(--color-surface) 75%, transparent 100%);
 }
 
+/* ── Currency cell ──────────────────────────────────── */
+.currency-cell {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem; /* text-caption */
+}
+
 /* ── Compact variant (for cards) ────────────────────── */
 .table-compact th {
   padding: 0.375rem 0.5rem;

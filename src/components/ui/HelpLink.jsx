@@ -11,7 +11,7 @@ export function HelpLink({ articleKey, children }) {
     <button
       type="button"
       onClick={() => openHelp(articleKey)}
-      className="text-label text-primary underline hover:no-underline"
+      className="text-caption text-primary underline hover:no-underline"
     >
       {children}
     </button>

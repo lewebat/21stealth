@@ -87,7 +87,8 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
     if (supportsFileAccess) {
       try {
         const [handle] = await window.showOpenFilePicker({
-          types: [{ description: '21stealth Config', accept: { 'application/json': ['.json'] } }]
+          types: [{ description: '21stealth Config', accept: { 'application/json': ['.json'] } }],
+          mode: 'readwrite',
         })
         const file = await handle.getFile()
         try {

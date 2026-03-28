@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Info } from 'lucide-react'
+import { X } from 'lucide-react'
 import { detectInput } from '@utils/detectInput'
 import { FloatInput } from './Form'
 import Button from './Button'
@@ -128,11 +128,10 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
                 ) : null
               }
             />
-            <div className="flex items-center gap-1.5 text-caption text-text-subtle mt-1">
-              <Info size={12} className="shrink-0" />
-              Enter a wallet address or xPub key. Supported: BTC, ETH, SOL, LTC, DOGE, TRX — chain is detected automatically.{' '}
-              <HelpLink articleKey="xpub-explained">What is an xPub?</HelpLink>
-            </div>
+            <p className="text-caption text-text-subtle mt-1">
+              Enter a wallet address or xPub key.{' '}
+              <HelpLink articleKey="xpub-explained">Learn more about xPub</HelpLink>
+            </p>
 
             {/* Added addresses grouped by chain */}
             {firstChain && extraAddresses.length > 0 && (

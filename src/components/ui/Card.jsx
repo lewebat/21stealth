@@ -1,3 +1,5 @@
+import { cn } from '@lib/utils'
+
 /**
  * Card — wraps .card-* CSS classes.
  * @param {'default'|'surface'|'elevated'|'interactive'} variant
@@ -7,7 +9,7 @@ function Card({ children, variant = 'default', size = 'default', className = '',
   const variantClass = variant === 'default' ? 'card' : `card-${variant}`
   const sizeClass = size !== 'default' ? `card-${size}` : ''
   return (
-    <div className={[variantClass, sizeClass, className].filter(Boolean).join(' ')} {...props}>
+    <div className={cn(variantClass, sizeClass, className)} {...props}>
       {children}
     </div>
   )
@@ -15,7 +17,7 @@ function Card({ children, variant = 'default', size = 'default', className = '',
 
 Card.Header = function CardHeader({ children, className = '', ...props }) {
   return (
-    <div className={['card-header', className].filter(Boolean).join(' ')} {...props}>
+    <div className={cn('card-header', className)} {...props}>
       {children}
     </div>
   )
@@ -23,7 +25,7 @@ Card.Header = function CardHeader({ children, className = '', ...props }) {
 
 Card.Body = function CardBody({ children, className = '', ...props }) {
   return (
-    <div className={['card-body', className].filter(Boolean).join(' ')} {...props}>
+    <div className={cn('card-body', className)} {...props}>
       {children}
     </div>
   )
@@ -31,7 +33,7 @@ Card.Body = function CardBody({ children, className = '', ...props }) {
 
 Card.Footer = function CardFooter({ children, className = '', ...props }) {
   return (
-    <div className={['card-footer', className].filter(Boolean).join(' ')} {...props}>
+    <div className={cn('card-footer', className)} {...props}>
       {children}
     </div>
   )
@@ -45,7 +47,7 @@ Card.Footer = function CardFooter({ children, className = '', ...props }) {
  */
 Card.Stat = function CardStat({ label, value, trend, trendDirection = 'neutral', className = '' }) {
   return (
-    <div className={['card-stat', className].filter(Boolean).join(' ')}>
+    <div className={cn('card-stat', className)}>
       <span className="card-stat__label">{label}</span>
       <span className="card-stat__value">{value}</span>
       {trend && (

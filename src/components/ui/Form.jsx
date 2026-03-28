@@ -1,3 +1,5 @@
+import { cn } from '@lib/utils'
+
 /**
  * FormGroup — wraps label + input + helper/error.
  * @param {string} label
@@ -9,7 +11,7 @@
  */
 export function FormGroup({ label, htmlFor, required, helper, error, success, children, className = '' }) {
   return (
-    <div className={['form-group', className].filter(Boolean).join(' ')}>
+    <div className={cn('form-group', className)}>
       {label && (
         <label
           htmlFor={htmlFor}
@@ -26,6 +28,8 @@ export function FormGroup({ label, htmlFor, required, helper, error, success, ch
   )
 }
 
+const inputStateClass = (state) => state === 'error' ? 'input-error' : state === 'success' ? 'input-success' : ''
+
 /**
  * Input — wraps .input CSS class.
  * @param {'error'|'success'|''} state
@@ -34,7 +38,7 @@ export function FormGroup({ label, htmlFor, required, helper, error, success, ch
  * @param {React.ReactNode} iconRight
  */
 export function Input({ state, size, iconLeft, iconRight, className = '', ...props }) {
-  const stateClass = state === 'error' ? 'input-error' : state === 'success' ? 'input-success' : ''
+  const stateClass = inputStateClass(state)
   const sizeClass  = size === 'sm' ? 'input-sm' : size === 'lg' ? 'input-lg' : ''
 
   if (iconLeft || iconRight) {
@@ -42,7 +46,7 @@ export function Input({ state, size, iconLeft, iconRight, className = '', ...pro
       <div className="input-wrapper">
         {iconLeft && <span className="input-icon-left">{iconLeft}</span>}
         <input
-          className={['input', iconLeft && 'input--icon-left', iconRight && 'input--icon-right', stateClass, sizeClass, className].filter(Boolean).join(' ')}
+          className={cn('input', iconLeft && 'input--icon-left', iconRight && 'input--icon-right', stateClass, sizeClass, className)}
           {...props}
         />
         {iconRight && <span className="input-icon-right">{iconRight}</span>}
@@ -52,7 +56,7 @@ export function Input({ state, size, iconLeft, iconRight, className = '', ...pro
 
   return (
     <input
-      className={['input', stateClass, sizeClass, className].filter(Boolean).join(' ')}
+      className={cn('input', stateClass, sizeClass, className)}
       {...props}
     />
   )
@@ -67,13 +71,12 @@ export function Input({ state, size, iconLeft, iconRight, className = '', ...pro
  * @param {'error'|'success'|''} state
  */
 export function FloatInput({ label, id, iconRight, state, className = '', ...props }) {
-  const stateClass = state === 'error' ? 'input-error' : state === 'success' ? 'input-success' : ''
   return (
     <div className="input-float input-wrapper">
       <input
         id={id}
         placeholder=" "
-        className={['input', iconRight && 'input--icon-right', stateClass, className].filter(Boolean).join(' ')}
+        className={cn('input', iconRight && 'input--icon-right', inputStateClass(state), className)}
         {...props}
       />
       {label && <label htmlFor={id} className="input-float-label">{label}</label>}
@@ -83,14 +86,12 @@ export function FloatInput({ label, id, iconRight, state, className = '', ...pro
 }
 
 export function Textarea({ state, className = '', ...props }) {
-  const stateClass = state === 'error' ? 'input-error' : state === 'success' ? 'input-success' : ''
-  return <textarea className={['textarea', stateClass, className].filter(Boolean).join(' ')} {...props} />
+  return <textarea className={cn('textarea', inputStateClass(state), className)} {...props} />
 }
 
 export function Select({ state, className = '', children, ...props }) {
-  const stateClass = state === 'error' ? 'input-error' : state === 'success' ? 'input-success' : ''
   return (
-    <select className={['select', stateClass, className].filter(Boolean).join(' ')} {...props}>
+    <select className={cn('select', inputStateClass(state), className)} {...props}>
       {children}
     </select>
   )
@@ -98,7 +99,7 @@ export function Select({ state, className = '', children, ...props }) {
 
 export function Checkbox({ id, label, className = '', ...props }) {
   return (
-    <label htmlFor={id} className={['checkbox', className].filter(Boolean).join(' ')}>
+    <label htmlFor={id} className={cn('checkbox', className)}>
       <input id={id} type="checkbox" {...props} />
       {label}
     </label>
@@ -107,7 +108,7 @@ export function Checkbox({ id, label, className = '', ...props }) {
 
 export function Radio({ id, name, label, className = '', ...props }) {
   return (
-    <label htmlFor={id} className={['radio', className].filter(Boolean).join(' ')}>
+    <label htmlFor={id} className={cn('radio', className)}>
       <input id={id} name={name} type="radio" {...props} />
       {label}
     </label>

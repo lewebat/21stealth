@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Eye, EyeOff, RefreshCw } from 'lucide-react'
+
+function PasswordToggleButton({ show, onToggle }) {
+  return (
+    <button type="button" onClick={onToggle} className="btn-icon" style={{ color: 'var(--color-text-muted)' }}>
+      {show ? <EyeOff size={16} /> : <Eye size={16} />}
+    </button>
+  )
+}
 import { exportConfig, importConfig, NeedsPasswordError, saveToHandle } from '@/services/walletConfig'
 import Button from './Button'
 import { FormGroup, Input } from './Form'
@@ -216,7 +224,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoFocus
-                iconRight={<button type="button" onClick={() => setShowPassword(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex' }}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>}
+                iconRight={<PasswordToggleButton show={showPassword} onToggle={() => setShowPassword(v => !v)} />}
               />
             </FormGroup>
             {password.length > 0 && (
@@ -228,7 +236,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
                   value={passwordConfirm}
                   onChange={(e) => setPasswordConfirm(e.target.value)}
                   state={passwordConfirm.length > 0 && password !== passwordConfirm ? 'error' : undefined}
-                  iconRight={<button type="button" onClick={() => setShowPassword(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex' }}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>}
+                  iconRight={<PasswordToggleButton show={showPassword} onToggle={() => setShowPassword(v => !v)} />}
                 />
               </FormGroup>
             )}
@@ -260,7 +268,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoFocus
-                iconRight={<button type="button" onClick={() => setShowPassword(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex' }}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>}
+                iconRight={<PasswordToggleButton show={showPassword} onToggle={() => setShowPassword(v => !v)} />}
               />
             </FormGroup>
             {password.length > 0 && (
@@ -272,7 +280,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
                   value={passwordConfirm}
                   onChange={(e) => setPasswordConfirm(e.target.value)}
                   state={passwordConfirm.length > 0 && password !== passwordConfirm ? 'error' : undefined}
-                  iconRight={<button type="button" onClick={() => setShowPassword(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex' }}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>}
+                  iconRight={<PasswordToggleButton show={showPassword} onToggle={() => setShowPassword(v => !v)} />}
                 />
               </FormGroup>
             )}
@@ -301,7 +309,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
                 onKeyDown={(e) => e.key === 'Enter' && handleImportSubmit()}
                 autoFocus
                 state={error ? 'error' : undefined}
-                iconRight={<button type="button" onClick={() => setShowPassword(v => !v)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex' }}>{showPassword ? <EyeOff size={16} /> : <Eye size={16} />}</button>}
+                iconRight={<PasswordToggleButton show={showPassword} onToggle={() => setShowPassword(v => !v)} />}
               />
             </FormGroup>
           </div>

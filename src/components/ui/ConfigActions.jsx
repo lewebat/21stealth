@@ -195,7 +195,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
           {savedFlash ? 'Saved ✓' : 'Save'}
           {isDirty && !savedFlash && <span className="inline-block w-1.5 h-1.5 rounded-full bg-warning ml-1 align-middle" />}
         </Button>
-        <input ref={fileInputRef} type="file" accept=".21s,application/json,application/octet-stream,text/plain" onChange={handleFileChange} className="visually-hidden" />
+        <input ref={fileInputRef} type="file" accept="*" onChange={handleFileChange} className="visually-hidden" />
       </div>
 
       {/* Export Modal */}

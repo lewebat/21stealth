@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, Sector, ResponsiveContainer } from 'recharts'
 import Card from './Card'
 import Button from './Button'
 import { tokenUsd } from '@/utils/tokenUsd'
+import { formatCurrency } from '@lib/utils'
 
 const TOKEN_CHART_COLORS = {
   'btc:btc':   '#d4f042',
@@ -64,12 +65,8 @@ function ColoredDots({ segments, total }) {
   )
 }
 
-const fmtFull  = (n) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const fmtShort = (n) => {
-  if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(2) + 'M'
-  if (n >= 1_000)     return '$' + (n / 1_000).toFixed(2) + 'K'
-  return fmtFull(n)
-}
+const fmtFull  = (n) => formatCurrency(n)
+const fmtShort = (n) => formatCurrency(n, { compact: true })
 
 export function TotalBar({ wallets, prices }) {
   const { segments, total } = useMemo(() => {

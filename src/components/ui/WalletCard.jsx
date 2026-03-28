@@ -3,11 +3,10 @@ import { Pencil, RefreshCw, X, Info, ChevronUp, ChevronDown } from 'lucide-react
 import Card from './Card'
 import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
 import { CHAIN_BADGE } from '@utils/chains'
+import { formatCurrency, formatBalance } from '@lib/utils'
 
 const STABLECOINS = new Set(['usdt', 'usdc'])
-const fmt4 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })
-const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const fmtBalance = (n, key) => STABLECOINS.has(key) ? fmt2(n) : fmt4(n)
+const fmtBalance = (n, key) => formatBalance(n, { isStablecoin: STABLECOINS.has(key) })
 const shorten = (addr) => addr.length > 20 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr
 
 function aggregateTokens(addresses, chain, addrTokens) {
@@ -212,7 +211,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                             </div>
                           </td>
                           <td>
-                            <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
+                            <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
                           </td>
                         </tr>
                       )
@@ -240,7 +239,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                                     <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
                                   </td>
                                   <td>
-                                    <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
+                                    <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
                                   </td>
                                 </tr>
                               ))}
@@ -269,7 +268,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                                     <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
                                   </td>
                                   <td>
-                                    <div className="text-right font-mono text-caption text-text-muted">${fmt2(token.usd)}</div>
+                                    <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
                                   </td>
                                 </tr>
                               ))}
@@ -289,7 +288,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
       <Card.Footer className="mt-auto">
         <span className="text-caption text-text-subtle">Total</span>
         <span className="text-caption font-semibold">
-          ${fmt2(totalUsd)}{isPartialError ? ' *' : ''}
+          {formatCurrency(totalUsd)}{isPartialError ? ' *' : ''}
         </span>
       </Card.Footer>
     </Card>

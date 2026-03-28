@@ -6,18 +6,13 @@ import Button from './Button'
 import { useCI } from '@hooks/useCI'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { getPriceHistory } from '@/services/priceHistory'
+import { formatCurrency } from '@lib/utils'
 
 function today() { return new Date().toISOString().split('T')[0] }
 
 const TOKEN_PRICE_KEYS = { eth: 'ethereum', btc: 'bitcoin', sol: 'solana', ltc: 'litecoin', doge: 'dogecoin', trx: 'tron' }
 const STABLECOINS = new Set(['usdt', 'usdc'])
 const BACKFILL_DAYS = 14
-
-function formatUsd(value) {
-  if (value >= 1_000_000) return '$' + (value / 1_000_000).toFixed(2) + 'M'
-  if (value >= 1_000)     return '$' + (value / 1_000).toFixed(1) + 'K'
-  return '$' + value.toFixed(2)
-}
 
 function formatDate(dateStr) {
   const [, month, day] = dateStr.split('-')
@@ -173,9 +168,9 @@ export function HistoryChart({ history, wallets, prices }) {
     <Card>
       <Card.Header>
         <div>
-          <div className="h2">{formatUsd(currentValue)}</div>
+          <div className="h2">{formatCurrency(currentValue, { compact: true })}</div>
           <div className={`text-caption font-mono mt-0.5 ${totalDelta >= 0 ? 'text-success' : 'text-danger'}`}>
-            {totalDelta >= 0 ? '+' : ''}{formatUsd(totalDelta)}
+            {formatCurrency(totalDelta, { sign: true, compact: true })}
             <span className="ml-1 text-xs">
               ({totalDeltaPct >= 0 ? '+' : ''}{totalDeltaPct.toFixed(2)}%)
             </span>
@@ -201,12 +196,12 @@ export function HistoryChart({ history, wallets, prices }) {
                 </linearGradient>
               </defs>
               <XAxis dataKey="date" tick={{ fill: colors['text-subtle'], fontSize: 10 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-              <YAxis domain={[min * 0.998, max * 1.002]} tick={{ fill: colors['text-subtle'], fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={formatUsd} width={60} />
+              <YAxis domain={[min * 0.998, max * 1.002]} tick={{ fill: colors['text-subtle'], fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => formatCurrency(v, { compact: true })} width={60} />
               <Tooltip
                 contentStyle={{ backgroundColor: colors['surface-elevated'], border: `1px solid ${colors.border}`, borderRadius: '8px', fontSize: '12px' }}
                 labelStyle={{ color: colors['text-muted'] }}
                 itemStyle={{ color }}
-                formatter={(value) => [formatUsd(Number(value)), 'Value']}
+                formatter={(value) => [formatCurrency(Number(value), { compact: true }), 'Value']}
               />
               <Area type="monotone" dataKey="value" stroke={color} strokeWidth={2} fill="url(#chartGradient)" dot={false} activeDot={{ r: 4, fill: color, strokeWidth: 0 }} />
             </AreaChart>

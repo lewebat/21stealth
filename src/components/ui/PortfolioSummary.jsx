@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table'
 import Card from './Card'
 import { tokenUsd } from '@/utils/tokenUsd'
+import { formatCurrency, formatBalance } from '@lib/utils'
 
 const TOKEN_LABELS = { btc: 'Bitcoin', eth: 'Ethereum', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron', usdt: 'Tether USD', usdc: 'USD Coin' }
 
@@ -17,9 +18,7 @@ const TOKEN_COLORS = {
 }
 
 const STABLECOINS = new Set(['usdt', 'usdc'])
-const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const fmt8 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 8 })
-const fmtHoldings = (n, key) => STABLECOINS.has(key) ? fmt2(n) : fmt8(n)
+const fmtHoldings = (n, key) => formatBalance(n, { isStablecoin: STABLECOINS.has(key), maxDecimals: 8 })
 
 function TokenCell({ row }) {
   const colors = TOKEN_COLORS[row.original.key] ?? { text: 'text-text-muted' }
@@ -83,10 +82,10 @@ export function PortfolioSummary({ wallets, getDelta, prices }) {
         const positive = row.original.deltaUsd !== null && row.original.deltaUsd > 0
         return (
           <div className="text-right">
-            <span className="font-semibold">${fmt2(getValue())}</span>
+            <span className="font-semibold">{formatCurrency(getValue())}</span>
             {row.original.deltaUsd !== null && Math.abs(row.original.deltaUsd) >= 0.01 && (
               <span className={`text-caption font-mono ml-1.5 ${positive ? 'text-success' : 'text-danger'}`}>
-                {positive ? '+' : ''}${fmt2(row.original.deltaUsd)}
+                {formatCurrency(row.original.deltaUsd, { sign: true })}
               </span>
             )}
           </div>

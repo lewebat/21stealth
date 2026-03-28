@@ -58,7 +58,7 @@ export function HistoryChart({ history, wallets, prices }) {
     getPriceHistory().then(setPriceHistory).catch(() => {})
   }, [])
 
-  const loadedWallets = wallets.filter((w) => w.tokens.length > 0)
+  const loadedWallets = useMemo(() => wallets.filter((w) => w.tokens.length > 0), [wallets])
 
   // Real snapshot data points
   const chartData = useMemo(() => {
@@ -96,7 +96,7 @@ export function HistoryChart({ history, wallets, prices }) {
 
       const pricesForDate = buildPricesForDate(dateStr, priceHistory, prices)
       // Skip days where we have no historical price data at all
-      const hasData = Object.entries(pricesForDate).some(([coin, v]) => v > 0 && TOKEN_PRICE_KEYS[coin] !== undefined || v > 0)
+      const hasData = Object.values(pricesForDate).some((v) => v > 0)
       if (!hasData) continue
 
       const point = { date: formatDate(dateStr), synthetic: true }

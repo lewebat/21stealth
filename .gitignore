@@ -28,3 +28,4 @@ dist-ssr
 
 # Superpowers internal dev artifacts
 docs/superpowers/
+.superpowers/

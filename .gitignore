@@ -25,3 +25,6 @@ dist-ssr
 
 # Git worktrees
 .worktrees
+
+# Superpowers internal dev artifacts
+docs/superpowers/

@@ -19,22 +19,21 @@ const HELP_ARTICLES = {
           <table className="table table-compact">
             <thead>
               <tr>
-                <th>Type</th>
                 <th>Wallet</th>
                 <th>xPub</th>
                 <th>How to export</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td className="text-text-muted">Hardware</td><td>Trezor</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Suite → Account → Details → xPub</td></tr>
-              <tr><td className="text-text-muted">Hardware</td><td>Ledger</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Ledger Live → Account → Edit → Advanced</td></tr>
-              <tr><td className="text-text-muted">Hardware</td><td>BitBox02</td><td className="text-success">✓</td><td className="text-caption text-text-muted">BitBoxApp → Account → Show xPub</td></tr>
-              <tr><td className="text-text-muted">Desktop</td><td>Electrum</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Wallet → Information → Master Public Key</td></tr>
-              <tr><td className="text-text-muted">Desktop</td><td>Sparrow</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Settings → Keystores → xPub field</td></tr>
-              <tr><td className="text-text-muted">Mobile</td><td>BlueWallet</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Wallet → ··· → Export / Backup → xPub</td></tr>
-              <tr><td className="text-text-muted">Mobile</td><td>Trust Wallet</td><td className="text-danger">✗</td><td className="text-caption text-text-muted">Not available — add addresses individually</td></tr>
-              <tr><td className="text-text-muted">Mobile</td><td>BRD / Jaxx</td><td className="text-danger">✗</td><td className="text-caption text-text-muted">Not available — add addresses individually</td></tr>
-              <tr><td className="text-text-muted">Web</td><td>Blockchain.com</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Settings → Wallets & Addresses → xPub</td></tr>
+              <tr><td>Trezor</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Suite → Account → Details → xPub</td></tr>
+              <tr><td>Ledger</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Ledger Live → Account → Edit → Advanced</td></tr>
+              <tr><td>BitBox02</td><td className="text-success">✓</td><td className="text-caption text-text-muted">BitBoxApp → Account → Show xPub</td></tr>
+              <tr><td>Electrum</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Wallet → Information → Master Public Key</td></tr>
+              <tr><td>Sparrow</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Settings → Keystores → xPub field</td></tr>
+              <tr><td>BlueWallet</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Wallet → ··· → Export / Backup → xPub</td></tr>
+              <tr><td>Trust Wallet</td><td className="text-danger">✗</td><td className="text-caption text-text-muted">Not available — add addresses individually</td></tr>
+              <tr><td>BRD / Jaxx</td><td className="text-danger">✗</td><td className="text-caption text-text-muted">Not available — add addresses individually</td></tr>
+              <tr><td>Blockchain.com</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Settings → Wallets & Addresses → xPub</td></tr>
             </tbody>
           </table>
         </div>

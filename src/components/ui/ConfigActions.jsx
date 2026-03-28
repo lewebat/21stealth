@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Eye, EyeOff, RefreshCw } from 'lucide-react'
+import { Download, Eye, EyeOff, RefreshCw, Save, Upload } from 'lucide-react'
 
 function PasswordToggleButton({ show, onToggle }) {
   return (
@@ -95,7 +95,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, classN
     if (supportsFileAccess) {
       try {
         const [handle] = await window.showOpenFilePicker({
-          types: [{ description: '21stealth Config', accept: { 'application/json': ['.json'] } }],
+          types: [{ description: '21 Stealth Config', accept: { 'application/json': ['.json'] } }],
           mode: 'readwrite',
         })
         const file = await handle.getFile()
@@ -195,16 +195,22 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, classN
       <div className={`cluster cluster-sm${className ? ` ${className}` : ''}`}>
         <Button variant="secondary" size="sm" onClick={onRefreshAll} aria-label="Refresh all">
           <RefreshCw size={14} />
+          <span className="nav-label">Refresh</span>
         </Button>
         <Button variant="secondary" size="sm" onClick={handleImport}>
-          Import
+          <Upload size={14} />
+          <span className="nav-label">Import</span>
         </Button>
         <Button variant="secondary" size="sm" onClick={() => setModal({ type: 'export' })} disabled={wallets.length === 0}>
-          Export
+          <Download size={14} />
+          <span className="nav-label">Export</span>
         </Button>
         <Button variant="secondary" size="sm" onClick={handleSave} disabled={wallets.length === 0}>
-          {savedFlash ? 'Saved ✓' : 'Save'}
-          {isDirty && !savedFlash && <span className="inline-block w-1.5 h-1.5 rounded-full bg-warning ml-1 align-middle" />}
+          <Save size={14} />
+          <span className="nav-label">
+            {savedFlash ? 'Saved ✓' : 'Save'}
+            {isDirty && !savedFlash && <span className="inline-block w-1.5 h-1.5 rounded-full bg-warning ml-1 align-middle" />}
+          </span>
         </Button>
         <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={handleFileChange} className="visually-hidden" />
       </div>

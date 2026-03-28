@@ -12,12 +12,12 @@ export function InstallBanner() {
   return (
     <div className="install-banner">
       <div className="flex items-center gap-3 flex-1 min-w-0">
-        <Download size={18} className="shrink-0 text-primary" />
+        <Download size={18} className="shrink-0" style={{ color: 'rgba(0,0,0,0.6)' }} />
         <div className="min-w-0">
-          <p className="text-caption font-semibold">Install 21stealth</p>
+          <p className="text-caption font-semibold">Install 21 Stealth App</p>
           {showIOSHint ? (
-            <p className="text-caption text-text-muted flex items-center gap-1">
-              Tap <Share size={12} className="inline" /> then "Add to Home Screen"
+            <p className="text-caption text-text-muted">
+              Tap <span className="inline-flex items-center gap-0.5 align-middle"><Share size={12} /></span> then&nbsp;"Add to Home Screen"
             </p>
           ) : (
             <p className="text-caption text-text-muted">Add to your home screen for quick access</p>

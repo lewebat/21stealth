@@ -63,21 +63,71 @@
   background-color: var(--color-background);
 }
 
-/* ── Config actions bottom bar (mobile) ─────────────── */
+/* ── Config actions desktop nav (hidden on mobile) ──── */
+.config-actions-desktop { display: none; }
+@media (min-width: 640px) {
+  .config-actions-desktop { display: flex; }
+  .config-actions-desktop .nav-label { display: inline; }
+}
+
+/* ── Config actions nav label (hidden outside bar) ──── */
+.nav-label { display: none; }
+
+/* ── Config actions bottom bar (mobile only) ────────── */
+@media (min-width: 640px) {
+  .config-actions-bar { display: none !important; }
+  .main-content { padding-bottom: 0; }
+}
+
 @media (max-width: 639px) {
   .config-actions-bar {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 1rem;
+    left: 1.5rem;
+    right: 1.5rem;
     z-index: 100;
-    background-color: var(--color-background);
-    border-top: 1px solid var(--color-border);
-    padding: 0.625rem 1.5rem;
+    background-color: var(--color-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    padding: 0.625rem 1rem;
     padding-bottom: max(0.625rem, env(safe-area-inset-bottom));
     justify-content: space-around;
   }
   .config-actions-bar > * { flex: 1; justify-content: center; }
+  .config-actions-bar button,
+  .config-actions-bar .btn {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    color: rgba(0, 0, 0, 0.6) !important;
+    font-weight: 600;
+    flex-direction: column !important;
+    gap: 0.2rem !important;
+  }
+  .config-actions-bar .nav-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1;
+  }
+  .config-actions-bar button:hover,
+  .config-actions-bar .btn:hover,
+  .config-actions-bar button:focus,
+  .config-actions-bar .btn:focus {
+    background: none !important;
+    color: rgba(0, 0, 0, 0.85) !important;
+  }
+  .config-actions-bar button:active,
+  .config-actions-bar .btn:active {
+    background: rgba(0, 0, 0, 0.15) !important;
+    color: rgba(0, 0, 0, 0.85) !important;
+  }
+  .config-actions-bar button:disabled,
+  .config-actions-bar .btn:disabled {
+    color: rgba(0, 0, 0, 0.3);
+  }
   .main-content { padding-bottom: 56px; }
 }
 
@@ -86,9 +136,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1.5rem;
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  margin: 1rem 1.5rem 0;
+  padding: 0.75rem 1rem;
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
 /* ── Sidebar layout ─────────────────────────────────── */

@@ -30,6 +30,15 @@ const useUIStore = create(
 
       openHelp: (key = null) => set({ helpOpen: true, helpArticle: key }),
       closeHelp: () => set({ helpOpen: false, helpArticle: null }),
+
+      appNotifications: [], // [{ id, type: 'warning'|'error', message, ts }]
+      addAppNotification: (n) => set((s) => {
+        if (s.appNotifications.some((x) => x.id === n.id)) return s
+        return { appNotifications: [...s.appNotifications, { ...n, ts: Date.now() }] }
+      }),
+      dismissAppNotification: (id) => set((s) => ({
+        appNotifications: s.appNotifications.filter((x) => x.id !== id),
+      })),
     }),
     {
       name: 'ui-store',

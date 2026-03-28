@@ -4,6 +4,7 @@ import { exportConfig, importConfig, NeedsPasswordError, saveToHandle } from '@/
 import Button from './Button'
 import { FormGroup, Input } from './Form'
 import { Modal } from './Modal'
+import useUIStore from '@store/useUIStore'
 
 const supportsFileAccess = typeof window.showSaveFilePicker === 'function'
 
@@ -18,15 +19,16 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
   const [savedPassword, setSavedPassword] = useState('')
   const [isEncrypted, setIsEncrypted] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
-  const [autoSaveError, setAutoSaveError] = useState(false)
   const savedFlashRef = useRef(null)
+  const addAppNotification    = useUIStore((s) => s.addAppNotification)
+  const dismissAppNotification = useUIStore((s) => s.dismissAppNotification)
 
   const closeModal = () => { setModal(null); setPassword(''); setPasswordConfirm(''); setError(''); setShowPassword(false) }
 
   function flashSaved() {
     if (savedFlashRef.current) clearTimeout(savedFlashRef.current)
     setSavedFlash(true)
-    setAutoSaveError(false)
+    dismissAppNotification('auto-save-failed')
     savedFlashRef.current = setTimeout(() => setSavedFlash(false), 2000)
   }
 
@@ -38,11 +40,11 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         await saveToHandle(fileHandle, wallets, history, isEncrypted ? savedPassword : undefined)
       } catch {
         setFileHandle(null)
-        setAutoSaveError(true)
+        addAppNotification({ id: 'auto-save-failed', type: 'warning', message: 'Auto-save failed — click Save to reconnect your file.' })
       }
     }, 1000)
     return () => clearTimeout(timer)
-  }, [wallets, history, fileHandle, savedPassword, isEncrypted])
+  }, [wallets, history, fileHandle, savedPassword, isEncrypted, addAppNotification])
 
   async function handleExportSubmit(encrypted) {
     await exportConfig(wallets, history, encrypted ? password : undefined)
@@ -157,9 +159,6 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         <Button variant="secondary" size="sm" onClick={handleSave} disabled={wallets.length === 0}>
           {savedFlash ? 'Saved ✓' : 'Save'}
         </Button>
-        {autoSaveError && (
-          <span className="text-caption text-danger">Auto-save lost — click Save</span>
-        )}
         <input ref={fileInputRef} type="file" accept=".21s" onChange={handleFileChange} className="visually-hidden" />
       </div>
 

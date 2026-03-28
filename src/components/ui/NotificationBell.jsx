@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { Bell } from 'lucide-react'
+import { Bell, AlertTriangle } from 'lucide-react'
 import { useStatus } from '@hooks/queries/useStatus'
+import useUIStore from '@store/useUIStore'
 
 const CHAIN_BADGE = {
   eth:  'bg-primary text-text-inverted',
@@ -25,6 +26,8 @@ export function NotificationBell() {
   const [read, setRead]     = useState({})   // { [chain]: true } — marked as read
   const ref = useRef(null)
   const { data } = useStatus()
+  const appNotifications       = useUIStore((s) => s.appNotifications)
+  const dismissAppNotification = useUIStore((s) => s.dismissAppNotification)
 
   const issues = data?.chains
     ? Object.entries(data.chains)
@@ -55,7 +58,7 @@ export function NotificationBell() {
 
   const unread      = issues.filter(({ chain }) => !read[chain])
   const hasCritical = unread.some((n) => n.status === 'critical')
-  const hasUnread   = unread.length > 0
+  const hasUnread   = unread.length > 0 || appNotifications.length > 0
 
   function markAllRead() {
     setRead(Object.fromEntries(issues.map(({ chain }) => [chain, true])))
@@ -98,11 +101,30 @@ export function NotificationBell() {
             )}
           </div>
 
-          {issues.length === 0 ? (
+          {appNotifications.length > 0 && (
+            <ul className="notification-dropdown__list">
+              {appNotifications.map(({ id, message, ts }) => (
+                <li key={id} className="notification-item">
+                  <AlertTriangle size={13} className="text-warning shrink-0 mt-0.5" />
+                  <div className="notification-item__body">
+                    <span className="text-caption">{message}</span>
+                    {ts && (
+                      <span className="notification-item__time">{timeAgo(ts)}</span>
+                    )}
+                  </div>
+                  <button className="notification-item__dismiss" onClick={() => dismissAppNotification(id)} title="Dismiss">
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {issues.length === 0 && appNotifications.length === 0 ? (
             <div className="notification-dropdown__empty">
               All systems operational
             </div>
-          ) : (
+          ) : issues.length > 0 ? (
             <ul className="notification-dropdown__list">
               {issues.map(({ chain, status, message }) => (
                 <li key={chain} className={`notification-item${read[chain] ? ' notification-item--read' : ''}`}>
@@ -128,7 +150,7 @@ export function NotificationBell() {
                 </li>
               ))}
             </ul>
-          )}
+          ) : null}
         </div>
       )}
     </div>

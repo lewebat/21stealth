@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.stealth21.app",
+      "sha256_cert_fingerprints": [
+        "C6:46:F1:96:56:D1:90:4A:98:99:28:EF:BF:2A:75:12:38:17:50:98:89:C3:43:98:22:40:18:8A:F3:53:71:7E"
+      ]
+    }
+  }
+]

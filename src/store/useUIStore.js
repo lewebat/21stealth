@@ -4,12 +4,8 @@ import { persist } from 'zustand/middleware'
 const useUIStore = create(
   persist(
     (set) => ({
-      sidebarOpen: true,
       theme: 'dark', // 'light' | 'dark'
       toasts: [],
-
-      toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
-      setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
       toggleTheme: () =>
         set((s) => ({ theme: s.theme === 'light' ? 'dark' : 'light' })),

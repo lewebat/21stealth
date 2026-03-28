@@ -36,7 +36,6 @@ function TokenCell({ row }) {
 
 export function PortfolioSummary({ wallets, getDelta, prices }) {
   const [tab, setTab] = useState('value')
-  const loadedWallets = wallets.filter((w) => w.status === 'ok')
 
   const { data, totalUsd } = useMemo(() => {
     const map = new Map()

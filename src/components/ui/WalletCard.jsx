@@ -2,15 +2,7 @@ import { Fragment, useMemo, useState } from 'react'
 import { Pencil, RefreshCw, X, Info, ChevronUp, ChevronDown } from 'lucide-react'
 import Card from './Card'
 import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
-
-const CHAIN_BADGE = {
-  eth:  'bg-primary text-text-inverted',
-  btc:  'bg-accent text-text-inverted',
-  sol:  'bg-info text-text-inverted',
-  ltc:  'bg-info text-text-inverted',
-  doge: 'bg-warning text-text-inverted',
-  trx:  'bg-danger text-text-inverted',
-}
+import { CHAIN_BADGE } from '@utils/chains'
 
 const STABLECOINS = new Set(['usdt', 'usdc'])
 const fmt4 = (n) => n.toLocaleString('en-US', { maximumFractionDigits: 4 })

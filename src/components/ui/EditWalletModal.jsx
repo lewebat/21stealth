@@ -5,13 +5,8 @@ import { FloatInput } from './Form'
 import Button from './Button'
 import { detectInput } from '@utils/detectInput'
 import { HelpLink } from '@ui'
+import { CHAIN_LABELS, CHAIN_BADGE } from '@utils/chains'
 
-const CHAIN_LABELS = { eth: 'Ethereum', btc: 'Bitcoin', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron' }
-const CHAIN_BADGE = {
-  eth: 'bg-primary text-text-inverted', btc: 'bg-accent text-text-inverted',
-  sol: 'bg-info text-text-inverted',    ltc: 'bg-info text-text-inverted',
-  doge: 'bg-warning text-text-inverted', trx: 'bg-danger text-text-inverted',
-}
 const MAX_ADDRESSES = 10
 
 export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {

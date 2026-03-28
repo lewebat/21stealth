@@ -51,9 +51,7 @@ export function useHistory(initialHistory = []) {
     if (!previousSnapshot) return null
     const wb = previousSnapshot.balances[walletId]
     if (!wb) return null
-    // Try new chain:key format first, fall back to legacy key-only format
-    const [chain, tokenKey] = chainTokenKey.includes(':') ? chainTokenKey.split(':') : [null, chainTokenKey]
-    const prev = wb[chainTokenKey] ?? (chain ? undefined : wb[tokenKey])
+    const prev = wb[chainTokenKey]
     if (prev === undefined) return null
     const delta = currentBalance - prev
     if (Math.abs(delta) < 0.000001) return null

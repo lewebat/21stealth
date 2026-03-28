@@ -46,7 +46,7 @@ export function PriceTicker({ prices }) {
         <div className="ticker-track flex w-max">
           {/* Duplicate coins for seamless loop */}
           {[...COINS, ...COINS].map(({ id, symbol }, i) => (
-            <CoinItem key={i} id={id} symbol={symbol} coin={prices?.[id]} />
+            <CoinItem key={`${id}-${i}`} id={id} symbol={symbol} coin={prices?.[id]} />
           ))}
         </div>
       </div>

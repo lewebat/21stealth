@@ -159,7 +159,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         <Button variant="secondary" size="sm" onClick={handleSave} disabled={wallets.length === 0}>
           {savedFlash ? 'Saved ✓' : 'Save'}
         </Button>
-        <input ref={fileInputRef} type="file" accept=".21s" onChange={handleFileChange} className="visually-hidden" />
+<input ref={fileInputRef} type="file" accept=".21s" onChange={handleFileChange} className="visually-hidden" />
       </div>
 
       {/* Export Modal */}

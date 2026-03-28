@@ -58,6 +58,7 @@
 /* ── Compact variant (for cards) ────────────────────── */
 .table-compact th {
   padding: 0.375rem 0.5rem;
+  padding-left: 0;
 }
 
 .table-compact td {

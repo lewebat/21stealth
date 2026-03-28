@@ -131,6 +131,8 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
             <p className="text-caption text-text-subtle mt-1">
               Enter a wallet address or xPub key.{' '}
               <HelpLink articleKey="xpub-explained">Learn more about xPub</HelpLink>
+              {' · '}
+              <HelpLink articleKey="add-wallet">How to add a wallet</HelpLink>
             </p>
 
             {/* Added addresses grouped by chain */}

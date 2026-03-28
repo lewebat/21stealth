@@ -52,7 +52,7 @@ async function buildConfigBlob(wallets, history, password) {
 
 export async function exportConfig(wallets, history, password) {
   const blob = await buildConfigBlob(wallets, history, password)
-  const filename = password ? '21stealth-config.encrypted.21s' : '21stealth-config.21s'
+  const filename = password ? '21stealth-config.encrypted.json' : '21stealth-config.json'
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

@@ -87,7 +87,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
     if (supportsFileAccess) {
       try {
         const [handle] = await window.showOpenFilePicker({
-          types: [{ description: '21stealth Config', accept: { 'application/json': ['.21s'] } }]
+          types: [{ description: '21stealth Config', accept: { 'application/json': ['.json'] } }]
         })
         const file = await handle.getFile()
         try {
@@ -167,7 +167,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
   async function handleSaveSubmit(usePassword) {
     const pwd = usePassword ? password : undefined
     try {
-      const handle = await window.showSaveFilePicker({ suggestedName: '21stealth-config.21s' })
+      const handle = await window.showSaveFilePicker({ suggestedName: '21stealth-config.json' })
       await saveToHandle(handle, wallets, history, pwd)
       setFileHandle(handle)
       setIsEncrypted(usePassword)
@@ -195,7 +195,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
           {savedFlash ? 'Saved ✓' : 'Save'}
           {isDirty && !savedFlash && <span className="inline-block w-1.5 h-1.5 rounded-full bg-warning ml-1 align-middle" />}
         </Button>
-        <input ref={fileInputRef} type="file" accept="*" onChange={handleFileChange} className="visually-hidden" />
+        <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={handleFileChange} className="visually-hidden" />
       </div>
 
       {/* Export Modal */}

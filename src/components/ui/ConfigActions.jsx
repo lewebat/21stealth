@@ -42,11 +42,11 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
 
   // Warn before leaving when there are unsaved changes
   useEffect(() => {
-    if (!isDirty) return
+    if (wallets.length === 0) return
     const handler = (e) => { e.preventDefault(); e.returnValue = '' }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
-  }, [isDirty])
+  }, [wallets.length])
 
   function markClean() {
     setIsDirty(false)

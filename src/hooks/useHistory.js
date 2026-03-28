@@ -26,13 +26,16 @@ export function useHistory(initialHistory = []) {
 
       const last = prev.length > 0 ? prev[prev.length - 1] : null
       if (last) {
-        const changed = loaded.some((wallet) =>
-          wallet.tokens.some((token) => {
-            const prevVal = last.balances[wallet.id]?.[token.key]
-            return prevVal === undefined || Math.abs(token.balance - prevVal) >= 0.000001
-          })
-        )
-        if (!changed) return prev
+        // Always record a new data point when the day has changed (even if balances are identical)
+        if (last.date === today()) {
+          const changed = loaded.some((wallet) =>
+            wallet.tokens.some((token) => {
+              const prevVal = last.balances[wallet.id]?.[`${token.chain}:${token.key}`]
+              return prevVal === undefined || Math.abs(token.balance - prevVal) >= 0.000001
+            })
+          )
+          if (!changed) return prev
+        }
       }
 
       const snapshot = { date: today(), balances }

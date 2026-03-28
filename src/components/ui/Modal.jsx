@@ -40,32 +40,3 @@ Modal.Body = function ModalBody({ children, className = '' }) {
 Modal.Footer = function ModalFooter({ children, className = '' }) {
   return <div className={['modal-footer', className].filter(Boolean).join(' ')}>{children}</div>
 }
-
-/**
- * Drawer — slides in from right.
- */
-export function Drawer({ isOpen, onClose, title, children }) {
-  useEffect(() => {
-    if (!isOpen) return
-    const handleKey = (e) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [isOpen, onClose])
-
-  if (!isOpen) return null
-
-  return (
-    <>
-      <div className="drawer-overlay" onClick={onClose} />
-      <div className="drawer" role="dialog" aria-modal="true">
-        <div className="modal-header">
-          {title && <h2 className="h4">{title}</h2>}
-          <button className="modal-close" onClick={onClose} aria-label="Close">
-            <X size={16} />
-          </button>
-        </div>
-        <div className="modal-body">{children}</div>
-      </div>
-    </>
-  )
-}

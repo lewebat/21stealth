@@ -1,7 +1,7 @@
 export { default as Button } from './Button'
 export { default as Card } from './Card'
 export { FormGroup, Input, Textarea, Select, Checkbox, Radio } from './Form'
-export { Modal, Drawer } from './Modal'
+export { Modal } from './Modal'
 export { TotalBar } from './TotalBar'
 export { WalletCard } from './WalletCard'
 export { PortfolioSummary } from './PortfolioSummary'

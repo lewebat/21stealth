@@ -82,6 +82,8 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
     return next
   })
 
+  const [confirmRemove, setConfirmRemove] = useState(false)
+
   return (
     <Card className="h-full flex flex-col">
       <Card.Header>
@@ -102,7 +104,29 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
           <button type="button" onClick={onRefresh} disabled={wallet.status === 'loading'} title="Refresh" className="btn-icon text-text-muted hover:text-text disabled:opacity-40">
             <RefreshCw size={14} />
           </button>
-          <button type="button" onClick={onRemove} title="Remove" className="btn-icon text-text-subtle hover:text-danger"><X size={14} /></button>
+          {confirmRemove ? (
+            <>
+              <button
+                type="button"
+                onClick={onRemove}
+                className="btn-icon text-danger"
+                title="Confirm remove"
+              ><X size={14} /></button>
+              <button
+                type="button"
+                onClick={() => setConfirmRemove(false)}
+                className="text-caption text-text-subtle hover:text-text px-1"
+                title="Cancel"
+              >Cancel</button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmRemove(true)}
+              title="Remove wallet"
+              className="btn-icon text-text-subtle hover:text-danger"
+            ><X size={14} /></button>
+          )}
         </div>
       </Card.Header>
 

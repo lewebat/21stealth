@@ -18,6 +18,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
   const [savedPassword, setSavedPassword] = useState('')
   const [isEncrypted, setIsEncrypted] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
+  const [autoSaveError, setAutoSaveError] = useState(false)
   const savedFlashRef = useRef(null)
 
   const closeModal = () => { setModal(null); setPassword(''); setPasswordConfirm(''); setError(''); setShowPassword(false) }
@@ -25,6 +26,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
   function flashSaved() {
     if (savedFlashRef.current) clearTimeout(savedFlashRef.current)
     setSavedFlash(true)
+    setAutoSaveError(false)
     savedFlashRef.current = setTimeout(() => setSavedFlash(false), 2000)
   }
 
@@ -36,6 +38,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         await saveToHandle(fileHandle, wallets, history, isEncrypted ? savedPassword : undefined)
       } catch {
         setFileHandle(null)
+        setAutoSaveError(true)
       }
     }, 1000)
     return () => clearTimeout(timer)
@@ -154,6 +157,9 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         <Button variant="secondary" size="sm" onClick={handleSave} disabled={wallets.length === 0}>
           {savedFlash ? 'Saved ✓' : 'Save'}
         </Button>
+        {autoSaveError && (
+          <span className="text-caption text-danger">Auto-save lost — click Save</span>
+        )}
         <input ref={fileInputRef} type="file" accept=".21s" onChange={handleFileChange} className="visually-hidden" />
       </div>
 

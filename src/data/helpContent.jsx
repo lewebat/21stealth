@@ -9,33 +9,35 @@ const HELP_ARTICLES = {
     body: (
       <>
         <p className="text-body">
-          An <strong>xPub key</strong> (extended public key) is a master public key for an HD
-          (Hierarchical Deterministic) wallet. From a single xPub, your wallet software derives
-          a new receiving address for every transaction — that&apos;s why your Bitcoin address
-          changes each time you receive funds.
+          An <strong>xPub key</strong> lets you track all addresses of an HD wallet at once —
+          instead of adding each address individually, you paste the key once and the app
+          discovers all your transactions automatically.
         </p>
-        <p className="text-body mt-3">
-          Instead of adding each address individually, paste your xPub once and this app will
-          automatically discover all derived addresses and show their combined balance.
-        </p>
-        <p className="text-body mt-3">
-          <strong>Supported formats:</strong> xpub, ypub, zpub (Bitcoin), Ltub/Mtub (Litecoin),
-          dgub (Dogecoin). ypub and zpub are automatically converted to xpub format before lookup.
-        </p>
-        <p className="text-body mt-3">
-          <strong>How to export from Electrum:</strong> Wallet → Information → Master Public Key.
-          Copy the key starting with <code className="font-mono text-caption">xpub</code>,{' '}
-          <code className="font-mono text-caption">ypub</code>, or{' '}
-          <code className="font-mono text-caption">zpub</code>.
-        </p>
-        <p className="text-body mt-3">
-          <strong>How to export from Sparrow:</strong> Settings → Keystores → Master fingerprint
-          section → copy the xPub field.
-        </p>
-        <p className="text-caption text-text-subtle mt-4">
-          Your xPub is read-only — it cannot be used to spend funds. Only your private key or
-          seed phrase can do that.
-        </p>
+
+        <p className="text-body mt-4 font-semibold">Where to find your xPub</p>
+        <div className="table-wrapper mt-2">
+          <table className="table table-compact">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Wallet</th>
+                <th>xPub</th>
+                <th>How to export</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td className="text-text-muted">Hardware</td><td>Trezor</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Suite → Account → Details → xPub</td></tr>
+              <tr><td className="text-text-muted">Hardware</td><td>Ledger</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Ledger Live → Account → Edit → Advanced</td></tr>
+              <tr><td className="text-text-muted">Hardware</td><td>BitBox02</td><td className="text-success">✓</td><td className="text-caption text-text-muted">BitBoxApp → Account → Show xPub</td></tr>
+              <tr><td className="text-text-muted">Desktop</td><td>Electrum</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Wallet → Information → Master Public Key</td></tr>
+              <tr><td className="text-text-muted">Desktop</td><td>Sparrow</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Settings → Keystores → xPub field</td></tr>
+              <tr><td className="text-text-muted">Mobile</td><td>BlueWallet</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Wallet → ··· → Export / Backup → xPub</td></tr>
+              <tr><td className="text-text-muted">Mobile</td><td>Trust Wallet</td><td className="text-danger">✗</td><td className="text-caption text-text-muted">Not available — add addresses individually</td></tr>
+              <tr><td className="text-text-muted">Mobile</td><td>BRD / Jaxx</td><td className="text-danger">✗</td><td className="text-caption text-text-muted">Not available — add addresses individually</td></tr>
+              <tr><td className="text-text-muted">Web</td><td>Blockchain.com</td><td className="text-success">✓</td><td className="text-caption text-text-muted">Settings → Wallets & Addresses → xPub</td></tr>
+            </tbody>
+          </table>
+        </div>
       </>
     ),
   },

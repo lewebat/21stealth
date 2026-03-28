@@ -214,66 +214,35 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                         </tr>
                       )
                     })}
-                    {status === 'ok' && expandedChains.has(chain) && (isXpub
-                      ? addresses.map(addr => {
-                          const addrTokensRaw = tokensWithUsd(wallet.addrTokens[`${chain}:${addr}`] ?? [], prices)
-                            .filter(t => !hideSmall || t.usd >= 1)
-                            .sort((a, b) => b.usd - a.usd)
-                          return (
-                            <Fragment key={`${chain}-${addr}`}>
-                              <tr key={`${chain}-${addr}-header`} className="chain-header-row">
-                                <td colSpan={3} className="pb-0 pt-0">
-                                  <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
-                                </td>
-                              </tr>
-                              {addrTokensRaw.length === 0 ? (
-                                <tr key={`${chain}-${addr}-empty`}>
-                                  <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
-                                </tr>
-                              ) : addrTokensRaw.map(token => (
-                                <tr key={`${chain}-${addr}-${token.key}`}>
-                                  <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
-                                  <td>
-                                    <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
-                                  </td>
-                                  <td>
-                                    <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </Fragment>
-                          )
-                        })
-                      : addresses.map(addr => {
-                          const addrTokensRaw = tokensWithUsd(wallet.addrTokens[`${chain}:${addr}`] ?? [], prices)
-                            .filter(t => !hideSmall || t.usd >= 1)
-                            .sort((a, b) => b.usd - a.usd)
-                          return (
-                            <Fragment key={`${chain}-${addr}`}>
-                              <tr key={`${chain}-${addr}-header`} className="chain-header-row">
-                                <td colSpan={3} className="pb-0 pt-0">
-                                  <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
-                                </td>
-                              </tr>
-                              {addrTokensRaw.length === 0 ? (
-                                <tr key={`${chain}-${addr}-empty`}>
-                                  <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
-                                </tr>
-                              ) : addrTokensRaw.map(token => (
-                                <tr key={`${chain}-${addr}-${token.key}`}>
-                                  <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
-                                  <td>
-                                    <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
-                                  </td>
-                                  <td>
-                                    <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </Fragment>
-                          )
-                        })
-                    )}
+                    {status === 'ok' && expandedChains.has(chain) && addresses.map(addr => {
+                      const addrTokensRaw = tokensWithUsd(wallet.addrTokens[`${chain}:${addr}`] ?? [], prices)
+                        .filter(t => !hideSmall || t.usd >= 1)
+                        .sort((a, b) => b.usd - a.usd)
+                      return (
+                        <Fragment key={`${chain}-${addr}`}>
+                          <tr className="chain-header-row">
+                            <td colSpan={3} className="pb-0 pt-0">
+                              <span className="text-caption font-mono text-text-subtle">{fullAddresses ? addr : shorten(addr)}</span>
+                            </td>
+                          </tr>
+                          {addrTokensRaw.length === 0 ? (
+                            <tr>
+                              <td colSpan={3}><span className="text-caption text-text-subtle">No balance</span></td>
+                            </tr>
+                          ) : addrTokensRaw.map(token => (
+                            <tr key={`${chain}-${addr}-${token.key}`}>
+                              <td><span className="text-label text-text-muted">{token.key.toUpperCase()}</span></td>
+                              <td>
+                                <div className="text-right font-mono text-caption">{fmtBalance(token.balance, token.key)}</div>
+                              </td>
+                              <td>
+                                <div className="text-right font-mono text-caption text-text-muted">{formatCurrency(token.usd)}</div>
+                              </td>
+                            </tr>
+                          ))}
+                        </Fragment>
+                      )
+                    })}
                   </Fragment>
                   )
                 })}

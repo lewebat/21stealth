@@ -56,7 +56,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
 
   function handleRemoveAddress(chain, addr) {
     const entry = entries.find(e => e.chain === chain)
-    if (!entry || entry.addresses.length <= 1) return
+    if (!entry || entry.addresses.length === 1) return
     setEntries(prev => prev.map(e => e.chain === chain ? { ...e, addresses: e.addresses.filter(a => a !== addr) } : e))
   }
 
@@ -135,7 +135,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                 </div>
                 <div className="chain-entry-body stack stack-sm">
                   {addresses.map((addr, i) => (
-                    <div key={`${addr}-${i}`} className="flex items-center gap-2">
+                    <div key={addr} className="flex items-center gap-2">
                       <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
                       <button
                         type="button"

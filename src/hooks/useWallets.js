@@ -60,6 +60,7 @@ function allAddrKeys(wallet) {
 function aggregateTokens(addrTokens, keys) {
   const map = new Map()
   for (const addrKey of keys) {
+    if (addrKey.startsWith('xpub:')) continue   // skip xpub placeholder — per-address keys already cover the balance
     const chain = addrKey.split(':')[0]
     const tokens = addrTokens[addrKey]
     if (!tokens) continue

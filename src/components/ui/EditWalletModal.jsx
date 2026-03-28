@@ -134,7 +134,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                   </button>
                 </div>
                 <div className="chain-entry-body stack stack-sm">
-                  {addresses.map((addr, i) => (
+                  {addresses.map((addr) => (
                     <div key={addr} className="flex items-center gap-2">
                       <span className="flex-1 font-mono text-caption text-text-muted truncate">{addr}</span>
                       <button

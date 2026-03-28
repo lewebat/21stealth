@@ -14,6 +14,7 @@ export default function AppLayout() {
       <div className="main-content">
         <InstallBanner />
         <header className="app-header">
+          <span className="text-label text-text-subtle">v{__APP_VERSION__}</span>
           <div className="flex-1" />
           <NotificationBell />
           <button

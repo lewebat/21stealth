@@ -66,15 +66,14 @@ export default function DashboardPage() {
   return (
     <Container className="py-6 flex flex-col gap-6">
 
-      <div className="flex items-center justify-between">
-        <h1 className="h2">Portfolio</h1>
-        <ConfigActions
-          wallets={wallets}
-          history={history}
-          onImport={(ws, hist) => { importWallets(ws); if (hist) loadHistory(hist) }}
-          onRefreshAll={handleRefreshAll}
-        />
-      </div>
+      <h1 className="h2">Portfolio</h1>
+      <ConfigActions
+        wallets={wallets}
+        history={history}
+        onImport={(ws, hist) => { importWallets(ws); if (hist) loadHistory(hist) }}
+        onRefreshAll={handleRefreshAll}
+        className="config-actions-bar"
+      />
 
       <PriceTicker prices={prices} />
 

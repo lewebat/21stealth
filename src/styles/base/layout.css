@@ -63,6 +63,24 @@
   background-color: var(--color-background);
 }
 
+/* ── Config actions bottom bar (mobile) ─────────────── */
+@media (max-width: 639px) {
+  .config-actions-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background-color: var(--color-background);
+    border-top: 1px solid var(--color-border);
+    padding: 0.625rem 1.5rem;
+    padding-bottom: max(0.625rem, env(safe-area-inset-bottom));
+    justify-content: space-around;
+  }
+  .config-actions-bar > * { flex: 1; justify-content: center; }
+  .main-content { padding-bottom: 56px; }
+}
+
 /* ── Install banner ─────────────────────────────────── */
 .install-banner {
   display: flex;

@@ -16,7 +16,7 @@ import useUIStore from '@store/useUIStore'
 
 const supportsFileAccess = typeof window.showSaveFilePicker === 'function'
 
-export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
+export function ConfigActions({ wallets, history, onImport, onRefreshAll, className = '' }) {
   const fileInputRef = useRef(null)
   const [modal, setModal] = useState(null) // { type: 'export' } | { type: 'import', file } | { type: 'save' }
   const [password, setPassword] = useState('')
@@ -192,7 +192,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
 
   return (
     <>
-      <div className="cluster cluster-sm">
+      <div className={`cluster cluster-sm${className ? ` ${className}` : ''}`}>
         <Button variant="secondary" size="sm" onClick={onRefreshAll} aria-label="Refresh all">
           <RefreshCw size={14} />
         </Button>

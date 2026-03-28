@@ -16,10 +16,14 @@ export function useInstallPrompt() {
       setPromptEvent(e)
     }
 
+    const installedHandler = () => setIsInstalled(true)
     window.addEventListener('beforeinstallprompt', handler)
-    window.addEventListener('appinstalled', () => setIsInstalled(true))
+    window.addEventListener('appinstalled', installedHandler)
 
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('appinstalled', installedHandler)
+    }
   }, [])
 
   async function triggerInstall() {

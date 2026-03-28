@@ -4,8 +4,8 @@ import { detectInput } from '@utils/detectInput'
 import { FloatInput } from './Form'
 import Button from './Button'
 import { Modal } from './Modal'
-import { HelpLink } from '@ui'
-import { CHAIN_LABELS, CHAIN_BADGE } from '@utils/chains'
+import { HelpLink, ChainBadge } from '@ui'
+import { CHAIN_LABELS } from '@utils/chains'
 
 const MAX_ADDRESSES = 10
 
@@ -119,7 +119,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
                 {allEntries.map(entry => (
                   <div key={entry.chain}>
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className={`chain-badge ${CHAIN_BADGE[entry.chain]}`}>{entry.chain.toUpperCase()}</span>
+                      <ChainBadge chain={entry.chain} />
                       <span className="text-caption text-text-muted">{CHAIN_LABELS[entry.chain]}</span>
                     </div>
                     {entry.type === 'xpub' ? (

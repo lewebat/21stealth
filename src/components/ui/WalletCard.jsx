@@ -1,8 +1,8 @@
 import { Fragment, useMemo, useState } from 'react'
 import { Pencil, RefreshCw, X, Info, ChevronUp, ChevronDown } from 'lucide-react'
 import Card from './Card'
+import { ChainBadge } from './ChainBadge'
 import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
-import { CHAIN_BADGE } from '@utils/chains'
 import { formatCurrency, formatBalance } from '@lib/utils'
 
 const STABLECOINS = new Set(['usdt', 'usdc'])
@@ -80,9 +80,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
       <Card.Header>
         <div className="flex items-center gap-1.5 min-w-0">
           {chainCount === 1 ? (
-            <span className={`chain-badge ${CHAIN_BADGE[wallet.entries[0].chain]}`}>
-              {wallet.entries[0].chain.toUpperCase()}
-            </span>
+            <ChainBadge chain={wallet.entries[0].chain} />
           ) : (
             <span className="chain-badge bg-primary text-text-inverted">
               {chainCount} Chains
@@ -143,7 +141,7 @@ export function WalletCard({ wallet, onRefresh, onRemove, onEdit, getDelta, pric
                     <tr key={`${chain}-header`} className="chain-header-row">
                       <td colSpan={3} className="pb-0 pt-0">
                         <div className="flex items-center gap-2">
-                          <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
+                          <ChainBadge chain={chain} />
                           {isXpub ? (
                             <>
                               <span className="font-mono text-caption text-text-subtle">

@@ -2,15 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Bell, AlertTriangle } from 'lucide-react'
 import { useStatus } from '@hooks/queries/useStatus'
 import useUIStore from '@store/useUIStore'
-
-const CHAIN_BADGE = {
-  eth:  'bg-primary text-text-inverted',
-  btc:  'bg-accent text-text-inverted',
-  sol:  'bg-info text-text-inverted',
-  trx:  'bg-danger text-text-inverted',
-  doge: 'bg-warning text-text-inverted',
-  ltc:  'bg-info text-text-inverted',
-}
+import { ChainBadge } from './ChainBadge'
 
 function timeAgo(ts) {
   const diff = Math.floor((Date.now() - ts) / 1000)
@@ -128,9 +120,7 @@ export function NotificationBell() {
             <ul className="notification-dropdown__list">
               {issues.map(({ chain, status, message }) => (
                 <li key={chain} className={`notification-item${read[chain] ? ' notification-item--read' : ''}`}>
-                  <span className={`chain-badge ${CHAIN_BADGE[chain] ?? 'bg-surface'}`}>
-                    {chain.toUpperCase()}
-                  </span>
+                  <ChainBadge chain={chain} />
                   <div className="notification-item__body">
                     <span className={`notification-item__status notification-item__status--${status}`}>
                       {status}

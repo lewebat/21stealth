@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useReactTable, getCoreRowModel, getSortedRowModel, flexRender } from '@tanstack/react-table'
 import Card from './Card'
+import { ChainBadge } from './ChainBadge'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { formatCurrency, formatBalance } from '@lib/utils'
 
@@ -27,7 +28,7 @@ function TokenCell({ row }) {
       <span className={`text-xs font-bold w-10 ${colors.text}`}>{row.original.key.toUpperCase()}</span>
       <span className="text-caption text-text-muted">{row.original.label}</span>
       {row.original.chain && (
-        <span className="chain-badge bg-surface-elevated text-text-subtle border border-border">{row.original.chain.toUpperCase()}</span>
+        <ChainBadge chain={row.original.chain} className="bg-surface-elevated text-text-subtle border border-border" />
       )}
     </div>
   )

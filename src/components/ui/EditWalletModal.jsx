@@ -4,8 +4,8 @@ import { Modal } from './Modal'
 import { FloatInput } from './Form'
 import Button from './Button'
 import { detectInput } from '@utils/detectInput'
-import { HelpLink } from '@ui'
-import { CHAIN_LABELS, CHAIN_BADGE } from '@utils/chains'
+import { HelpLink, ChainBadge } from '@ui'
+import { CHAIN_LABELS } from '@utils/chains'
 
 const MAX_ADDRESSES = 10
 
@@ -100,7 +100,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
                 <div key={chain} className="chain-entry">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className={`chain-badge ${CHAIN_BADGE[chain]}`}>{chain.toUpperCase()}</span>
+                      <ChainBadge chain={chain} />
                       <span className="font-mono text-caption text-text-muted">
                         {entry.xpub.slice(0, 10)}••••••
                       </span>

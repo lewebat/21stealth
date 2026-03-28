@@ -61,8 +61,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
   function handleSubmit(e) {
     e.preventDefault()
     if (addresses.length === 0) return
-    const entries = buildEntries(addresses)
-    onAdd(label.trim() || CHAIN_LABELS[entries[0]?.chain] || 'Wallet', entries)
+    onAdd(label.trim() || CHAIN_LABELS[allEntries[0]?.chain] || 'Wallet', allEntries)
     reset()
     onClose()
   }

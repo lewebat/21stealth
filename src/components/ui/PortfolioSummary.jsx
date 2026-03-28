@@ -4,21 +4,7 @@ import Card from './Card'
 import { ChainBadge } from './ChainBadge'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { formatCurrency, formatBalance } from '@lib/utils'
-
-const TOKEN_LABELS = { btc: 'Bitcoin', eth: 'Ethereum', sol: 'Solana', ltc: 'Litecoin', doge: 'Dogecoin', trx: 'Tron', usdt: 'Tether USD', usdc: 'USD Coin' }
-
-const TOKEN_COLORS = {
-  btc:  { text: 'text-accent',   bar: 'bg-accent' },
-  eth:  { text: 'text-primary',  bar: 'bg-primary' },
-  sol:  { text: 'text-info',     bar: 'bg-info' },
-  ltc:  { text: 'text-info',     bar: 'bg-info' },
-  doge: { text: 'text-warning',  bar: 'bg-warning' },
-  trx:  { text: 'text-danger',   bar: 'bg-danger' },
-  usdt: { text: 'text-success',  bar: 'bg-success' },
-  usdc: { text: 'text-info',     bar: 'bg-info' },
-}
-
-const STABLECOINS = new Set(['usdt', 'usdc'])
+import { TOKEN_LABELS, TOKEN_COLORS, STABLECOINS } from '@utils/tokenMetadata'
 const fmtHoldings = (n, key) => formatBalance(n, { isStablecoin: STABLECOINS.has(key), maxDecimals: 8 })
 
 function TokenCell({ row }) {

@@ -7,11 +7,11 @@ import { useCI } from '@hooks/useCI'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { getPriceHistory } from '@/services/priceHistory'
 import { formatCurrency } from '@lib/utils'
+import { STABLECOINS } from '@utils/tokenMetadata'
 
 function today() { return new Date().toISOString().split('T')[0] }
 
 const TOKEN_PRICE_KEYS = { eth: 'ethereum', btc: 'bitcoin', sol: 'solana', ltc: 'litecoin', doge: 'dogecoin', trx: 'tron' }
-const STABLECOINS = new Set(['usdt', 'usdc'])
 const BACKFILL_DAYS = 14
 
 function formatDate(dateStr) {

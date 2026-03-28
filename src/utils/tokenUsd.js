@@ -8,8 +8,7 @@ const TOKEN_PRICE_IDS = {
   trx:  'tron',
 }
 
-// Stablecoins are always 1:1 USD
-const STABLECOINS = new Set(['usdt', 'usdc'])
+import { STABLECOINS } from './tokenMetadata'
 
 export function tokenUsd(token, prices) {
   if (!prices) return 0

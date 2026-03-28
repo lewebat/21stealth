@@ -4,8 +4,8 @@ import Card from './Card'
 import { ChainBadge } from './ChainBadge'
 import { tokenUsd, tokensWithUsd } from '@/utils/tokenUsd'
 import { formatCurrency, formatBalance } from '@lib/utils'
+import { STABLECOINS } from '@utils/tokenMetadata'
 
-const STABLECOINS = new Set(['usdt', 'usdc'])
 const fmtBalance = (n, key) => formatBalance(n, { isStablecoin: STABLECOINS.has(key) })
 const shorten = (addr) => addr.length > 20 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr
 

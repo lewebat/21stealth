@@ -37,7 +37,10 @@ export default function DashboardPage() {
   useEffect(() => {
     const anyLoading = wallets.some(w => w.status === 'loading' || w.status === 'idle')
     const anyLoaded  = wallets.some(w => w.status === 'ok')
-    if (!anyLoading && anyLoaded) saveSnapshot(wallets)
+    if (!anyLoading && anyLoaded) {
+      const timer = setTimeout(() => saveSnapshot(wallets), 5000)
+      return () => clearTimeout(timer)
+    }
   }, [wallets, saveSnapshot])
 
   useEffect(() => {

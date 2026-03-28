@@ -60,13 +60,23 @@ export function HistoryChart({ history, wallets, prices }) {
 
   const loadedWallets = useMemo(() => wallets.filter((w) => w.tokens.length > 0), [wallets])
 
-  // Real snapshot data points
+  // Forward-filled chart data: generate one point per day from first snapshot to today.
+  // Days without a new snapshot reuse the last known balances with that day's prices.
   const chartData = useMemo(() => {
-    if (!prices || history.length === 0) return []
+    if (!prices || !priceHistory || history.length === 0) return []
     const loaded = wallets.filter((w) => w.tokens.length > 0)
-    return history.map((snap) => {
-      const pricesForDate = buildPricesForDate(snap.date, priceHistory, prices)
-      const point = { date: formatDate(snap.date) }
+
+    const start = new Date(history[0].date + 'T00:00:00')
+    const end   = new Date(today() + 'T00:00:00')
+    const points = []
+    let snapIdx = 0
+
+    for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dateStr = d.toISOString().split('T')[0]
+      while (snapIdx + 1 < history.length && history[snapIdx + 1].date <= dateStr) snapIdx++
+      const snap = history[snapIdx]
+      const pricesForDate = buildPricesForDate(dateStr, priceHistory, prices)
+      const point = { date: formatDate(dateStr) }
       if (selected === 'total') {
         let total = 0
         for (const wallet of loaded) {
@@ -78,8 +88,9 @@ export function HistoryChart({ history, wallets, prices }) {
         const wb = snap.balances[selected]
         point.value = wb ? Math.round(calcUsd(wb, pricesForDate, volatileOnly) * 100) / 100 : 0
       }
-      return point
-    })
+      points.push(point)
+    }
+    return points
   }, [history, prices, priceHistory, selected, volatileOnly, wallets])
 
   // Synthetic backfill: 14 days before first snapshot using historical prices

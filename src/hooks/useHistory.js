@@ -14,8 +14,6 @@ export function useHistory(initialHistory = []) {
     if (loaded.length === 0) return
 
     setHistory((prev) => {
-      if (prev.some((s) => s.date === today())) return prev
-
       const balances = {}
       for (const wallet of loaded) {
         balances[wallet.id] = {}
@@ -24,22 +22,22 @@ export function useHistory(initialHistory = []) {
         }
       }
 
+      // Only save if holdings changed compared to last snapshot (regardless of date)
       const last = prev.length > 0 ? prev[prev.length - 1] : null
       if (last) {
-        // Always record a new data point when the day has changed (even if balances are identical)
-        if (last.date === today()) {
-          const changed = loaded.some((wallet) =>
-            wallet.tokens.some((token) => {
-              const prevVal = last.balances[wallet.id]?.[`${token.chain}:${token.key}`]
-              return prevVal === undefined || Math.abs(token.balance - prevVal) >= 0.000001
-            })
-          )
-          if (!changed) return prev
-        }
+        const changed = loaded.some((wallet) =>
+          wallet.tokens.some((token) => {
+            const prevVal = last.balances[wallet.id]?.[`${token.chain}:${token.key}`]
+            return prevVal === undefined || Math.abs(token.balance - prevVal) >= 0.000001
+          })
+        )
+        if (!changed) return prev
       }
 
       const snapshot = { date: today(), balances }
-      const updated = [...prev, snapshot].sort((a, b) => a.date.localeCompare(b.date))
+      // Replace today's snapshot if it exists, otherwise append
+      const base = last?.date === today() ? prev.slice(0, -1) : prev
+      const updated = [...base, snapshot].sort((a, b) => a.date.localeCompare(b.date))
       return updated.slice(-MAX_HISTORY)
     })
   }, [])

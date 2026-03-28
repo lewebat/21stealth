@@ -66,7 +66,6 @@ export function HistoryChart({ history, wallets, prices }) {
   // Days without a new snapshot reuse the last known balances with that day's prices.
   const chartData = useMemo(() => {
     if (!prices || !priceHistory || history.length === 0) return []
-    const loaded = wallets.filter((w) => w.tokens.length > 0)
 
     const start = new Date(history[0].date + 'T00:00:00')
     const end   = new Date(today() + 'T00:00:00')
@@ -81,7 +80,7 @@ export function HistoryChart({ history, wallets, prices }) {
       const point = { date: formatDate(dateStr) }
       if (selected === 'total') {
         let total = 0
-        for (const wallet of loaded) {
+        for (const wallet of loadedWallets) {
           const wb = snap.balances[wallet.id]
           if (wb) total += calcUsd(wb, pricesForDate, volatileOnly)
         }
@@ -93,7 +92,7 @@ export function HistoryChart({ history, wallets, prices }) {
       points.push(point)
     }
     return points
-  }, [history, prices, priceHistory, selected, volatileOnly, wallets])
+  }, [history, prices, priceHistory, selected, volatileOnly, loadedWallets])
 
   // Synthetic backfill: 14 days before first snapshot using historical prices
   const syntheticData = useMemo(() => {

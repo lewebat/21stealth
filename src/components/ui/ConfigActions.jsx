@@ -159,6 +159,8 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll }) {
         flashSaved()
       } catch {
         setFileHandle(null)
+        addAppNotification({ id: 'auto-save-failed', type: 'warning', message: 'Save failed — please save again.' })
+        addToast({ type: 'warning', message: 'Save failed — please save again.' })
       }
       return
     }

@@ -19,7 +19,7 @@ export default defineConfig({
         name: '21stealth',
         short_name: '21stealth',
         description: 'Your crypto portfolio — private by default.',
-        theme_color: '#d4f042',
+        theme_color: '#0d110a',
         background_color: '#0d110a',
         display: 'standalone',
         orientation: 'portrait',

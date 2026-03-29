@@ -5,9 +5,9 @@
  */
 const ci = {
   colors: {
-    primary: '#2563eb',
-    'primary-hover': '#1d4ed8',
-    'primary-muted': '#dbeafe',
+    primary: '#d4f042',
+    'primary-hover': '#bfdc2a',
+    'primary-muted': '#2a3a10',
     secondary: '#64748b',
     'secondary-hover': '#475569',
     accent: '#f59e0b',
@@ -27,7 +27,7 @@ const ci = {
     text: '#0f172a',
     'text-muted': '#64748b',
     'text-subtle': '#94a3b8',
-    'text-inverted': '#ffffff',
+    'text-inverted': '#0d110a',
     'text-disabled': '#cbd5e1',
 
     'sidebar-bg': '#1e293b',

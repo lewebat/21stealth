@@ -53,7 +53,8 @@ async function getRecord() {
 }
 
 async function putRecord(value) {
-  const db = await openDB()
+  let db
+  try { db = await openDB() } catch { return }
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite')
     tx.objectStore(STORE_NAME).put(value, RECORD_KEY)

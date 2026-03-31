@@ -5,7 +5,7 @@ import { FloatInput } from './Form'
 import Button from './Button'
 import { detectInput } from '@utils/detectInput'
 import { HelpLink, ChainBadge } from '@ui'
-import { CHAIN_LABELS } from '@utils/chains'
+import { CHAIN_LABELS, CHAIN_BADGE } from '@utils/chains'
 
 const MAX_ADDRESSES = 10
 

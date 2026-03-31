@@ -16,7 +16,7 @@ import useUIStore from '@store/useUIStore'
 
 const supportsFileAccess = typeof window.showSaveFilePicker === 'function'
 
-export function ConfigActions({ wallets, history, onImport, onRefreshAll, className = '' }) {
+export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSessionPasswordChange = () => {}, className = '' }) {
   const fileInputRef = useRef(null)
   const [modal, setModal] = useState(null) // { type: 'export' } | { type: 'import', file } | { type: 'save' }
   const [password, setPassword] = useState('')
@@ -50,11 +50,24 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, classN
 
   // Warn before leaving when there are unsaved changes
   useEffect(() => {
-    if (wallets.length === 0) return
+    if (!isDirty || !fileHandle) return
     const handler = (e) => { e.preventDefault(); e.returnValue = '' }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
-  }, [wallets.length])
+  }, [isDirty, fileHandle])
+
+  // Firefox one-time notification
+  useEffect(() => {
+    if (supportsFileAccess) return
+    if (wallets.length === 0) return
+    if (localStorage.getItem('21stealth_firefox_notice_shown')) return
+    localStorage.setItem('21stealth_firefox_notice_shown', '1')
+    addAppNotification({
+      id: 'firefox-no-autosave',
+      type: 'info',
+      message: 'Auto-save to file is not supported in this browser — export manually to back up your config.',
+    })
+  }, [wallets.length, addAppNotification])
 
   function markClean() {
     setIsDirty(false)
@@ -105,7 +118,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, classN
           setIsEncrypted(false)
           setSavedPassword('')
           markClean()
-          onImport(imported, importedHistory)
+          onImport(imported, importedHistory, null)
         } catch (err) {
           if (err instanceof NeedsPasswordError) {
             setModal({ type: 'import', file, handle })
@@ -128,7 +141,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, classN
     try {
       const { wallets: imported, history: importedHistory } = await importConfig(file)
       markClean()
-      onImport(imported, importedHistory)
+      onImport(imported, importedHistory, null)
     } catch (err) {
       if (err instanceof NeedsPasswordError) {
         setModal({ type: 'import', file })
@@ -149,7 +162,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, classN
         setSavedPassword(password)
       }
       markClean()
-      onImport(imported, importedHistory)
+      onImport(imported, importedHistory, password)
       closeModal()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed')
@@ -185,6 +198,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, classN
       setSavedPassword(pwd ?? '')
       closeModal()
       flashSaved()
+      onSessionPasswordChange(pwd ?? null)
     } catch {
       closeModal()
     }

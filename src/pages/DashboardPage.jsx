@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Lock, SlidersHorizontal } from 'lucide-react'
+import { Lock, SlidersHorizontal, Eye, EyeOff } from 'lucide-react'
 import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
-import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, EditWalletModal, ConfigActions, PriceTicker, Card, Button } from '@ui'
+import { useStorage } from '@hooks/useStorage'
+import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, EditWalletModal, ConfigActions, PriceTicker, Card, Button, Modal, FormGroup, Input } from '@ui'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { Container, Grid } from '@layout'
 
@@ -16,14 +17,23 @@ export default function DashboardPage() {
   const [fullAddresses, setFullAddresses] = useState(false)
   const [filterOpen, setFilterOpen] = useState(false)
   const filterRef = useRef(null)
+  const storageAutoSaveInitRef = useRef(false)
   const [addingWallet, setAddingWallet] = useState(false)
+  const [unlockError, setUnlockError] = useState('')
+  const [unlockPassword, setUnlockPassword] = useState('')
+  const [showUnlockPassword, setShowUnlockPassword] = useState(false)
   const editingWallet = editingWalletId ? wallets.find(w => w.id === editingWalletId) ?? null : null
   const sortedWallets = useMemo(() =>
     [...wallets].sort((a, b) =>
       b.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0) -
       a.tokens.reduce((s, t) => s + tokenUsd(t, prices), 0)
     ), [wallets, prices])
+  const walletsKey = useMemo(
+    () => wallets.map(w => `${w.id}:${w.label}:${JSON.stringify(w.entries)}`).join('|'),
+    [wallets]
+  )
   const intervalRef = useRef(null)
+  const { isLocked, storageReady, autoLoadData, unlock, save, saveImmediate, setSessionPassword } = useStorage()
 
   function startPricePolling() {
     if (intervalRef.current) clearInterval(intervalRef.current)
@@ -56,11 +66,77 @@ export default function DashboardPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Auto-load unencrypted data from IndexedDB on mount
+  useEffect(() => {
+    if (!autoLoadData) return
+    importWallets(autoLoadData.wallets)
+    loadHistory(autoLoadData.history)
+  }, [autoLoadData]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save to IndexedDB on wallet config changes
+  useEffect(() => {
+    if (!storageReady || wallets.length === 0) return
+    if (!storageAutoSaveInitRef.current) { storageAutoSaveInitRef.current = true; return }
+    save(wallets, history)
+  }, [walletsKey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-save to IndexedDB on history changes
+  useEffect(() => {
+    if (!storageReady || wallets.length === 0 || history.length === 0) return
+    save(wallets, history)
+  }, [history]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function handleRefreshAll() {
     invalidatePrices()
     getPrices().then(setPrices).catch(() => {})
     startPricePolling()
     refreshAll()
+  }
+
+  async function handleUnlock() {
+    setUnlockError('')
+    try {
+      const data = await unlock(unlockPassword)
+      importWallets(data.wallets)
+      loadHistory(data.history)
+      setUnlockPassword('')
+    } catch {
+      setUnlockError('Wrong password, try again')
+    }
+  }
+
+  if (isLocked) {
+    return (
+      <Container className="py-6">
+        <Modal isOpen={true} onClose={() => {}} title="Unlock saved config" size="sm">
+          <Modal.Body>
+            <div className="stack stack-md">
+              <p className="text-body text-text-muted">Enter your password to restore your saved portfolio.</p>
+              <FormGroup label="Password" htmlFor="unlock-password" error={unlockError}>
+                <Input
+                  id="unlock-password"
+                  type={showUnlockPassword ? 'text' : 'password'}
+                  placeholder="Password"
+                  value={unlockPassword}
+                  onChange={(e) => { setUnlockPassword(e.target.value); setUnlockError('') }}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+                  autoFocus
+                  state={unlockError ? 'error' : undefined}
+                  iconRight={
+                    <button type="button" onClick={() => setShowUnlockPassword(v => !v)} className="btn-icon" style={{ color: 'var(--color-text-muted)' }}>
+                      {showUnlockPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  }
+                />
+              </FormGroup>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={handleUnlock}>Unlock</Button>
+          </Modal.Footer>
+        </Modal>
+      </Container>
+    )
   }
 
   return (
@@ -71,16 +147,28 @@ export default function DashboardPage() {
         <ConfigActions
           wallets={wallets}
           history={history}
-          onImport={(ws, hist) => { importWallets(ws); if (hist) loadHistory(hist) }}
+          onImport={(ws, hist, pwd) => {
+            importWallets(ws)
+            if (hist) loadHistory(hist)
+            setSessionPassword(pwd ?? null)
+            saveImmediate(ws, hist ?? [])
+          }}
           onRefreshAll={handleRefreshAll}
+          onSessionPasswordChange={setSessionPassword}
           className="config-actions-desktop"
         />
       </div>
       <ConfigActions
         wallets={wallets}
         history={history}
-        onImport={(ws, hist) => { importWallets(ws); if (hist) loadHistory(hist) }}
+        onImport={(ws, hist, pwd) => {
+          importWallets(ws)
+          if (hist) loadHistory(hist)
+          setSessionPassword(pwd ?? null)
+          saveImmediate(ws, hist ?? [])
+        }}
         onRefreshAll={handleRefreshAll}
+        onSessionPasswordChange={setSessionPassword}
         className="config-actions-bar"
       />
 

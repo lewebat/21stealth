@@ -38,17 +38,18 @@ function openDB() {
 }
 
 async function getRecord() {
+  let db
   try {
-    const db = await openDB()
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readonly')
-      const req = tx.objectStore(STORE_NAME).get(RECORD_KEY)
-      req.onsuccess = () => resolve(req.result ?? null)
-      req.onerror = () => reject(req.error)
-    })
+    db = await openDB()
   } catch {
-    return null
+    return null  // IndexedDB unavailable — treat as no data
   }
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readonly')
+    const req = tx.objectStore(STORE_NAME).get(RECORD_KEY)
+    req.onsuccess = () => { db.close(); resolve(req.result ?? null) }
+    req.onerror = () => { db.close(); reject(req.error) }
+  })
 }
 
 async function putRecord(value) {
@@ -56,23 +57,26 @@ async function putRecord(value) {
   return new Promise((resolve, reject) => {
     const tx = db.transaction(STORE_NAME, 'readwrite')
     tx.objectStore(STORE_NAME).put(value, RECORD_KEY)
-    tx.oncomplete = () => resolve()
-    tx.onerror = () => reject(tx.error)
-    tx.onabort = () => reject(tx.error)
+    tx.oncomplete = () => { db.close(); resolve() }
+    tx.onerror    = () => { db.close(); reject(tx.error) }
+    tx.onabort    = () => { db.close(); reject(tx.error) }
   })
 }
 
 async function deleteRecord() {
+  let db
   try {
-    const db = await openDB()
-    await new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, 'readwrite')
-      tx.objectStore(STORE_NAME).delete(RECORD_KEY)
-      tx.oncomplete = () => resolve()
-      tx.onerror = () => reject(tx.error)
-      tx.onabort = () => reject(tx.error)
-    })
-  } catch { /* ignore */ }
+    db = await openDB()
+  } catch {
+    return  // IndexedDB unavailable — nothing to delete
+  }
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_NAME, 'readwrite')
+    tx.objectStore(STORE_NAME).delete(RECORD_KEY)
+    tx.oncomplete = () => { db.close(); resolve() }
+    tx.onerror    = () => { db.close(); reject(tx.error) }
+    tx.onabort    = () => { db.close(); reject(tx.error) }
+  })
 }
 
 function stripWallet({ addrTokens, addrStatus, addrError, tokens, status, errorMsg, derivedAddrs, ...clean }) {

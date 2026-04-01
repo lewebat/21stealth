@@ -7,4 +7,8 @@ return [
     'trongrid_api_key'   => '',   // https://trongrid.io
     'alchemy_api_key'    => '',   // https://alchemy.com
     'blockchair_api_key' => '',   // https://blockchair.com/api
+    'db_host'            => 'localhost',
+    'db_name'            => '',   // MySQL database name
+    'db_user'            => '',   // MySQL user
+    'db_pass'            => '',   // MySQL password
 ];

@@ -4,6 +4,7 @@ import { useWallets } from '@hooks/useWallets'
 import { useHistory } from '@hooks/useHistory'
 import { getPrices, invalidatePrices } from '@/services/prices'
 import { useStorage } from '@hooks/useStorage'
+import { track } from '@/services/analytics'
 import { TotalBar, PortfolioSummary, HistoryChart, WalletCard, AddWalletForm, EditWalletModal, ConfigActions, PriceTicker, Card, Button, Modal, FormGroup, Input } from '@ui'
 import { tokenUsd } from '@/utils/tokenUsd'
 import { Container, Grid } from '@layout'
@@ -48,6 +49,8 @@ export default function DashboardPage() {
     startPricePolling()
     return () => clearInterval(intervalRef.current)
   }, [])
+
+  useEffect(() => { track('app_start') }, [])
 
   useEffect(() => {
     const anyLoading = wallets.some(w => w.status === 'loading' || w.status === 'idle')

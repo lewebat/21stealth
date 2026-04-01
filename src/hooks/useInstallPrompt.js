@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { track } from '@/services/analytics'
 
 export function useInstallPrompt() {
   const [promptEvent, setPromptEvent] = useState(null)
@@ -30,7 +31,10 @@ export function useInstallPrompt() {
     if (!promptEvent) return
     promptEvent.prompt()
     const { outcome } = await promptEvent.userChoice
-    if (outcome === 'accepted') setIsInstalled(true)
+    if (outcome === 'accepted') {
+      setIsInstalled(true)
+      track('pwa_installed')
+    }
     setPromptEvent(null)
   }
 

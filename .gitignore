@@ -29,3 +29,6 @@ dist-ssr
 # Superpowers internal dev artifacts
 docs/superpowers/
 .superpowers/
+
+# Secrets
+backend/config.php

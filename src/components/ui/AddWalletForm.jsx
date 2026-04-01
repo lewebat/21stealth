@@ -6,6 +6,7 @@ import Button from './Button'
 import { Modal } from './Modal'
 import { HelpLink, ChainBadge } from '@ui'
 import { CHAIN_LABELS } from '@utils/chains'
+import { track } from '@/services/analytics'
 
 const MAX_ADDRESSES = 10
 
@@ -62,6 +63,7 @@ export function AddWalletForm({ isOpen, onClose, onAdd }) {
     e.preventDefault()
     if (addresses.length === 0) return
     onAdd(label.trim() || CHAIN_LABELS[allEntries[0]?.chain] || 'Wallet', allEntries)
+    track('wallet_added', { chain: allEntries[0]?.chain ?? null })
     reset()
     onClose()
   }

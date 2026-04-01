@@ -8,6 +8,7 @@ function PasswordToggleButton({ show, onToggle }) {
     </button>
   )
 }
+import { track } from '@/services/analytics'
 import { exportConfig, importConfig, NeedsPasswordError, saveToHandle } from '@/services/walletConfig'
 import Button from './Button'
 import { FormGroup, Input } from './Form'
@@ -100,6 +101,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSess
 
   async function handleExportSubmit(encrypted) {
     await exportConfig(wallets, history, encrypted ? password : undefined)
+    track('config_exported', { encrypted })
     setIsDirty(false)
     closeModal()
   }
@@ -119,6 +121,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSess
           setSavedPassword('')
           markClean()
           onImport(imported, importedHistory, null)
+          track('config_imported', { encrypted: false })
         } catch (err) {
           if (err instanceof NeedsPasswordError) {
             setModal({ type: 'import', file, handle })
@@ -142,6 +145,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSess
       const { wallets: imported, history: importedHistory } = await importConfig(file)
       markClean()
       onImport(imported, importedHistory, null)
+      track('config_imported', { encrypted: false })
     } catch (err) {
       if (err instanceof NeedsPasswordError) {
         setModal({ type: 'import', file })
@@ -163,6 +167,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSess
       }
       markClean()
       onImport(imported, importedHistory, password)
+      track('config_imported', { encrypted: true })
       closeModal()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Import failed')
@@ -178,6 +183,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSess
       try {
         await saveToHandle(fileHandle, wallets, history, isEncrypted ? savedPassword : undefined)
         flashSaved()
+        track('config_saved', { encrypted: isEncrypted })
       } catch {
         setFileHandle(null)
         addAppNotification({ id: 'auto-save-failed', type: 'warning', message: 'Save failed — please save again.' })
@@ -198,6 +204,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSess
       setSavedPassword(pwd ?? '')
       closeModal()
       flashSaved()
+      track('config_saved', { encrypted: usePassword })
       onSessionPasswordChange(pwd ?? null)
     } catch {
       closeModal()
@@ -207,7 +214,7 @@ export function ConfigActions({ wallets, history, onImport, onRefreshAll, onSess
   return (
     <>
       <div className={`cluster cluster-sm${className ? ` ${className}` : ''}`}>
-        <Button variant="secondary" size="sm" onClick={onRefreshAll} aria-label="Refresh all">
+        <Button variant="secondary" size="sm" onClick={() => { track('refresh_all'); onRefreshAll() }} aria-label="Refresh all">
           <RefreshCw size={14} />
           <span className="nav-label">Refresh</span>
         </Button>

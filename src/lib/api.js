@@ -14,4 +14,11 @@ api.interceptors.response.use(
   (error) => Promise.reject(error)
 )
 
+// Attach app key to every request
+api.interceptors.request.use((config) => {
+  const key = import.meta.env.VITE_APP_KEY
+  if (key) config.headers['X-App-Key'] = key
+  return config
+})
+
 export default api

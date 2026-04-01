@@ -1,6 +1,7 @@
 // src/services/analytics.js
 
-const ENDPOINT = `${import.meta.env.VITE_API_URL || '/api'}/track`
+const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+const ENDPOINT = `${BASE}/backend/api/track`
 const STORAGE_KEY = '21stealth_sid'
 
 let sessionId = null
@@ -26,16 +27,13 @@ export function track(event, properties) {
     ...(properties !== undefined ? { properties } : {}),
   })
   try {
-    if (typeof navigator.sendBeacon === 'function') {
-      navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }))
-    } else {
-      fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        keepalive: true,
-      }).catch(() => {})
-    }
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true,
+      credentials: 'omit',
+    }).catch(() => {})
   } catch {
     // fire and forget — never throw
   }

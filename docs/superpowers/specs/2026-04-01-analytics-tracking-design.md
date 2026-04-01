@@ -26,7 +26,8 @@ track(event, props?)   → sends event via sendBeacon (fetch fallback), fire-and
 
 **`track()` behaviour:**
 - Sends `POST /api/track` with JSON body `{ session_id, event, properties? }`
-- Uses `navigator.sendBeacon()` if available, falls back to `fetch` with `keepalive: true`
+- Uses `navigator.sendBeacon()` with a `Blob` wrapper: `new Blob([JSON.stringify(body)], { type: 'application/json' })` — required to send `application/json` content type via `sendBeacon`
+- Falls back to `fetch` with `keepalive: true` if `sendBeacon` is unavailable
 - Never throws — all errors caught and silently discarded
 - No retry logic
 
@@ -35,17 +36,19 @@ track(event, props?)   → sends event via sendBeacon (fetch fallback), fire-and
 | Event | Trigger | Properties |
 |---|---|---|
 | `app_start` | DashboardPage mount | — |
-| `wallet_added` | Add Wallet form submit | `{ chain }` (first chain of new wallet) |
+| `wallet_added` | Add Wallet form submit | `{ chain: string }` (first chain of new wallet — deliberate: first chain is the primary identifier) |
 | `wallet_edited` | EditWalletModal save | — |
 | `config_imported` | Successful import in ConfigActions | `{ encrypted: bool }` |
 | `config_exported` | Successful export in ConfigActions | `{ encrypted: bool }` |
-| `config_saved` | Successful save in ConfigActions | `{ encrypted: bool }` |
-| `refresh_all` | Refresh button click | — |
+| `config_saved` | Manual save only (not auto-save) in ConfigActions | `{ encrypted: bool }` |
+| `refresh_all` | Refresh button click in ConfigActions | — |
 | `pwa_installed` | PWA install accepted via InstallBanner | — |
 
 ### Backend: `backend/api/track.php`
 
-Accepts `POST` only. Validates:
+Accepts `POST` only. Handles CORS: responds to `OPTIONS` preflight with appropriate headers and exits. All responses include `Access-Control-Allow-Origin: *` (matching existing backend pattern).
+
+Validates:
 - `session_id` matches UUID v4 regex
 - `event` is in a server-side whitelist (same list as table above)
 
@@ -57,7 +60,9 @@ DB credentials come from `backend/config.php` (existing pattern).
 
 ### Backend: `backend/api/stats.php`
 
-Returns JSON with aggregated metrics. Protected by the same Basic Auth as the dashboard.
+Returns JSON with aggregated metrics. Protected by Basic Auth (see Access Control).
+
+Results are file-cached for 60 seconds (same pattern as `prices.php`) to avoid running aggregate queries on every dashboard load.
 
 ```json
 {
@@ -66,17 +71,17 @@ Returns JSON with aggregated metrics. Protected by the same Basic Auth as the da
   "active_7d": 31,
   "active_30d": 97,
   "returning": 44,
-  "events_by_type": { "app_start": 312, "wallet_added": 89, ... },
-  "events_by_day": [{ "date": "2026-04-01", "count": 23 }, ...]
+  "events_by_type": { "app_start": 312, "wallet_added": 89, "..." : "..." },
+  "events_by_day": [{ "date": "2026-04-01", "count": 23 }]
 }
 ```
 
-`returning` = sessions with events on ≥ 2 distinct calendar days.  
+`returning` = sessions with events on ≥ 2 distinct calendar days. Calendar days use server timezone via `DATE(created_at)`.  
 `events_by_day` covers the last 30 days.
 
 ### Backend: `backend/api/stats-dashboard.php`
 
-Plain PHP-rendered HTML page. No JS framework. Inline CSS matching 21stealth dark color palette for readability. Displays all metrics from `stats.php` output.
+Plain PHP-rendered HTML page. No JS framework. Inline CSS matching 21stealth dark color palette for readability. Displays all metrics from `stats.php` output directly (no separate HTTP call — includes the stats logic inline or via `require`).
 
 Sections:
 1. **Overview cards** — Unique total, active today, active 7d, active 30d, returning
@@ -102,22 +107,26 @@ No IP address stored. No user agent stored.
 
 ### Access Control
 
-**`.htaccess`** Basic Auth protects `/api/stats-dashboard` and `/api/stats`.
+**`.htaccess`** Basic Auth protects `stats.php` and `stats-dashboard.php` using a `<FilesMatch>` directive:
 
 ```apache
-AuthType Basic
-AuthName "21stealth Stats"
-AuthUserFile /path/to/.htpasswd
-Require valid-user
+<FilesMatch "^stats(-dashboard)?\.php$">
+  AuthType Basic
+  AuthName "21stealth Stats"
+  AuthUserFile /path/to/.htpasswd
+  Require valid-user
+</FilesMatch>
 ```
 
 Password set via `htpasswd` CLI. Can be replaced with a PHP session login later without touching the rest of the system.
 
+`track.php` is intentionally **not** protected — it must be publicly reachable for the frontend to send events.
+
 ## Integration Points
 
-### `src/main.jsx` or `src/App.jsx`
+### `src/main.jsx`
 
-`initAnalytics()` called once at app bootstrap — before any routing.
+`initAnalytics()` called once at app bootstrap before React renders. `main.jsx` is preferred over `App.jsx` because it runs unconditionally and needs no React context.
 
 ### `src/pages/DashboardPage.jsx`
 
@@ -125,7 +134,7 @@ Password set via `htpasswd` CLI. Can be replaced with a PHP session login later 
 
 ### `src/components/ui/AddWalletForm.jsx`
 
-`track('wallet_added', { chain })` after successful wallet creation.
+`track('wallet_added', { chain })` after successful wallet creation. `chain` is the first chain in the new wallet's entries array.
 
 ### `src/components/ui/EditWalletModal.jsx`
 
@@ -133,10 +142,10 @@ Password set via `htpasswd` CLI. Can be replaced with a PHP session login later 
 
 ### `src/components/ui/ConfigActions.jsx`
 
-- `track('config_imported', { encrypted })` after successful import
-- `track('config_exported', { encrypted })` after successful export  
-- `track('config_saved', { encrypted })` after successful save
-- `track('refresh_all')` in `onRefreshAll` handler
+- `track('config_imported', { encrypted })` after successful import — must be added to **both** code paths: `handleImport` (File Access API success, unencrypted) and `handleFileChange` (fallback `<input>` success, unencrypted), plus `handleImportSubmit` (encrypted path)
+- `track('config_exported', { encrypted })` after successful export in `handleExportSubmit`
+- `track('config_saved', { encrypted })` after successful **manual** save — must be added to **both** save paths: `handleSave` (fileHandle branch, repeat saves) and `handleSaveSubmit` (first-time save via `showSaveFilePicker`) — not in the auto-save `useEffect`
+- `track('refresh_all')` on the Refresh button's `onClick` in ConfigActions (not inside the `onRefreshAll` prop callback in DashboardPage)
 
 ### `src/components/ui/InstallBanner.jsx`
 
@@ -148,7 +157,7 @@ Password set via `htpasswd` CLI. Can be replaced with a PHP session login later 
 - No user agent stored
 - Session ID is a random UUID with no link to personal data
 - All data stays on own server — no third-party services
-- Disclose in Datenschutzerklärung as "anonyme Nutzungsstatistik"
+- Disclose in the app's privacy/legal page as "anonymous usage statistics" (English per project convention; the legal page itself may use German for compliance purposes)
 
 ## Out of Scope (v1)
 

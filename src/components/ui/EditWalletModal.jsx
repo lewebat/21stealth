@@ -6,6 +6,7 @@ import Button from './Button'
 import { detectInput } from '@utils/detectInput'
 import { HelpLink, ChainBadge } from '@ui'
 import { CHAIN_LABELS, CHAIN_BADGE } from '@utils/chains'
+import { track } from '@/services/analytics'
 
 const MAX_ADDRESSES = 10
 
@@ -69,6 +70,7 @@ export function EditWalletModal({ wallet, isOpen, onClose, onSave }) {
     const firstEntry = entries[0]
     const fallbackLabel = firstEntry ? (CHAIN_LABELS[firstEntry.chain] ?? 'Wallet') : 'Wallet'
     onSave(wallet.id, { label: label.trim() || fallbackLabel, entries })
+    track('wallet_edited')
   }
 
   const detected = detectInput(inputValue.trim())

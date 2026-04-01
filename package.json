@@ -1,10 +1,10 @@
 {
   "name": "new-project",
   "private": true,
-  "version": "1.5.6",
+  "version": "1.5.7",
   "type": "module",
   "scripts": {
-    "generate:ci": "nodscripts/generate-ci.js",
+    "generate:ci": "node scripts/generate-ci.js",
     "dev": "npm run generate:ci && vite",
     "build": "vite build",
     "lint": "eslint .",

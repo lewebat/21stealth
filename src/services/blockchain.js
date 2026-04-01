@@ -1,7 +1,9 @@
 import { BLOCKCHAIN_API } from './blockchainApi'
 import { toXpub } from '@/utils/convertXpub'
 
-const APP_HEADERS = { 'X-App-Key': import.meta.env.VITE_APP_KEY }
+const APP_HEADERS = import.meta.env.VITE_APP_KEY
+  ? { 'X-App-Key': import.meta.env.VITE_APP_KEY }
+  : {}
 
 async function fetchBalance(chain, address) {
   let res

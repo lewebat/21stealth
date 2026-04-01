@@ -31,7 +31,7 @@ export function track(event, properties) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-App-Key': import.meta.env.VITE_APP_KEY,
+        ...(import.meta.env.VITE_APP_KEY ? { 'X-App-Key': import.meta.env.VITE_APP_KEY } : {}),
       },
       body,
       keepalive: true,

@@ -9,8 +9,9 @@ export function invalidatePrices() {
 export async function getPrices() {
   if (cachedPrices) return cachedPrices
 
+  const key = import.meta.env.VITE_APP_KEY
   const res = await fetch(BLOCKCHAIN_API.prices, {
-    headers: { 'X-App-Key': import.meta.env.VITE_APP_KEY },
+    headers: key ? { 'X-App-Key': key } : {},
   })
   if (!res.ok) throw new Error('Failed to fetch prices')
   cachedPrices = await res.json()

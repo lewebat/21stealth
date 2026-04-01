@@ -6,8 +6,9 @@ let cachedAt = 0
 
 export async function getPriceHistory() {
   if (cached && Date.now() - cachedAt < TTL) return cached
+  const key = import.meta.env.VITE_APP_KEY
   const res = await fetch(BLOCKCHAIN_API.priceHistory, {
-    headers: { 'X-App-Key': import.meta.env.VITE_APP_KEY },
+    headers: key ? { 'X-App-Key': key } : {},
   })
   if (!res.ok) throw new Error('Failed to fetch price history')
   cached = await res.json()

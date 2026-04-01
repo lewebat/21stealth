@@ -6,14 +6,19 @@ const STORAGE_KEY = '21stealth_sid'
 let sessionId = null
 
 export function initAnalytics() {
-  sessionId = localStorage.getItem(STORAGE_KEY)
-  if (!sessionId) {
-    sessionId = crypto.randomUUID()
-    localStorage.setItem(STORAGE_KEY, sessionId)
+  try {
+    sessionId = localStorage.getItem(STORAGE_KEY)
+    if (!sessionId) {
+      sessionId = crypto.randomUUID()
+      localStorage.setItem(STORAGE_KEY, sessionId)
+    }
+  } catch {
+    // localStorage blocked (private mode, quota) — analytics disabled silently
   }
 }
 
 export function track(event, properties) {
+  if (typeof event !== 'string' || !event) return
   if (!sessionId) return
   const body = JSON.stringify({
     session_id: sessionId,

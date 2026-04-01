@@ -147,9 +147,9 @@ Password set via `htpasswd` CLI. Can be replaced with a PHP session login later 
 - `track('config_saved', { encrypted })` after successful **manual** save — must be added to **both** save paths: `handleSave` (fileHandle branch, repeat saves) and `handleSaveSubmit` (first-time save via `showSaveFilePicker`) — not in the auto-save `useEffect`
 - `track('refresh_all')` on the Refresh button's `onClick` in ConfigActions (not inside the `onRefreshAll` prop callback in DashboardPage)
 
-### `src/components/ui/InstallBanner.jsx`
+### `src/hooks/useInstallPrompt.js`
 
-`track('pwa_installed')` when user accepts the install prompt.
+`track('pwa_installed')` inside `triggerInstall()` after `outcome === 'accepted'`. The hook is the correct integration point because `outcome` is only available there — `InstallBanner` calls `triggerInstall()` without awaiting the result.
 
 ## Privacy
 

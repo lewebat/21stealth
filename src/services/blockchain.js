@@ -1,10 +1,12 @@
 import { BLOCKCHAIN_API } from './blockchainApi'
 import { toXpub } from '@/utils/convertXpub'
 
+const APP_HEADERS = { 'X-App-Key': import.meta.env.VITE_APP_KEY }
+
 async function fetchBalance(chain, address) {
   let res
   try {
-    res = await fetch(`${BLOCKCHAIN_API.balance(chain)}?address=${encodeURIComponent(address)}`)
+    res = await fetch(`${BLOCKCHAIN_API.balance(chain)}?address=${encodeURIComponent(address)}`, { headers: APP_HEADERS })
   } catch {
     throw new Error('Backend not reachable')
   }
@@ -26,7 +28,7 @@ async function fetchXpubBalance(chain, xpub) {
 
   let res
   try {
-    res = await fetch(`${BLOCKCHAIN_API.xpub(chain)}?xpub=${encodeURIComponent(normalised)}`)
+    res = await fetch(`${BLOCKCHAIN_API.xpub(chain)}?xpub=${encodeURIComponent(normalised)}`, { headers: APP_HEADERS })
   } catch {
     throw new Error('Backend not reachable')
   }

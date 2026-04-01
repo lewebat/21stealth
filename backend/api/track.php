@@ -30,6 +30,11 @@ $session_id = $body['session_id'] ?? '';
 $event      = $body['event'] ?? '';
 $properties = $body['properties'] ?? null;
 
+if ($properties !== null && strlen(json_encode($properties)) > 512) {
+    http_response_code(400);
+    exit;
+}
+
 // Validate UUID v4
 if (!preg_match(
     '/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/',

@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { Download, Eye, EyeOff, RefreshCw, Save, Upload } from 'lucide-react'
+import { track } from '@/services/analytics'
+import { exportConfig, importConfig, NeedsPasswordError, saveToHandle } from '@/services/walletConfig'
+import Button from './Button'
+import { FormGroup, Input } from './Form'
+import { Modal } from './Modal'
+import useUIStore from '@store/useUIStore'
 
 function PasswordToggleButton({ show, onToggle }) {
   return (
@@ -8,12 +14,6 @@ function PasswordToggleButton({ show, onToggle }) {
     </button>
   )
 }
-import { track } from '@/services/analytics'
-import { exportConfig, importConfig, NeedsPasswordError, saveToHandle } from '@/services/walletConfig'
-import Button from './Button'
-import { FormGroup, Input } from './Form'
-import { Modal } from './Modal'
-import useUIStore from '@store/useUIStore'
 
 const supportsFileAccess = typeof window.showSaveFilePicker === 'function'
 

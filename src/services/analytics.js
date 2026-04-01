@@ -29,7 +29,10 @@ export function track(event, properties) {
   try {
     fetch(ENDPOINT, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-App-Key': import.meta.env.VITE_APP_KEY,
+      },
       body,
       keepalive: true,
       credentials: 'omit',

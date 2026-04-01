@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('UTC');
 $config = require __DIR__ . '/../config.php';
 
 $stats = null;

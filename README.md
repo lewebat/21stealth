@@ -2,7 +2,7 @@
 
 Track your crypto wallets without giving up your data. No account, no KYC, no server-side storage — your wallet addresses stay on your device.
 
-**→ [app.21stealth.com](https://app.21stealth.com)**
+**Website:** [www.21stealth.com](https://www.21stealth.com) — [**Launch App →**](https://app.21stealth.com)
 
 ---
 

@@ -18,6 +18,8 @@ Add your wallet addresses and get a live overview of your crypto portfolio. Bala
 
 Your wallet addresses never leave your device. They are stored in your browser's localStorage — nothing is saved on a server. No account, no tracking, no data collection.
 
+You can export your config as an encrypted file (password-protected) and store it anywhere you like — your own cloud, USB drive, or local folder. Import it on any device to restore your portfolio instantly.
+
 ## Install as app
 
 21stealth is a PWA — you can install it directly from your browser on mobile and desktop. Works offline after the first load.

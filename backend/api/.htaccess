@@ -4,3 +4,10 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.php -f
 RewriteRule ^(.+)$ $1.php [L]
+
+<FilesMatch "^stats(-dashboard)?\.php$">
+  AuthType Basic
+  AuthName "21stealth Stats"
+  AuthUserFile /var/www/.htpasswd
+  Require valid-user
+</FilesMatch>
